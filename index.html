@@ -2,7 +2,8 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#FAFAFA">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -17,8 +18,10 @@
   body{
     background:var(--bg); color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"SF Pro SC","PingFang SC","Segoe UI",system-ui,sans-serif;
-    -webkit-font-smoothing:antialiased; padding:24px 16px 40px;
+    -webkit-font-smoothing:antialiased;
+    padding:calc(24px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-right,0px)) calc(40px + env(safe-area-inset-bottom,0px)) calc(16px + env(safe-area-inset-left,0px));
     display:flex; justify-content:center;
+    overscroll-behavior:none; -webkit-tap-highlight-color:transparent;
   }
   .wrap{width:100%;max-width:960px}
   header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap}
@@ -26,7 +29,7 @@
   .brand small{font-size:10px;font-weight:650;color:var(--ink2);letter-spacing:1px;border:1px solid var(--line);border-radius:99px;padding:3px 10px;background:#fff}
   .brand em{font-style:normal;color:var(--blue)}
   .actions{display:flex;gap:8px}
-  button{font-family:inherit;cursor:pointer;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:13px;font-weight:600;padding:8px 13px;transition:.15s}
+  button{font-family:inherit;cursor:pointer;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:13px;font-weight:600;padding:8px 13px;transition:.15s;touch-action:manipulation;user-select:none;-webkit-user-select:none}
   button:hover{border-color:#C7D2E5;background:#F7F9FC}
   button:active{transform:translateY(1px)}
   button.primary{background:var(--blue);border-color:var(--blue);color:#fff;padding:11px 26px;font-size:15px}
@@ -44,9 +47,9 @@
   canvas{display:block;border-radius:8px;touch-action:none}
   .stage.shake{animation:shake .32s ease}
   @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
-  .overlay{position:absolute;inset:0;background:rgba(5,10,20,.52);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:5}
+  .overlay{position:absolute;inset:0;background:rgba(5,10,20,.52);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:5;overflow:auto}
   .overlay.hide{display:none}
-  .panel{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 60px rgba(0,0,0,.34);padding:30px 34px;max-width:470px;text-align:center}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 60px rgba(0,0,0,.34);padding:30px 34px;max-width:470px;max-height:calc(100vh - 40px);overflow:auto;text-align:center}
   .panel h2{font-size:25px;letter-spacing:-.6px;margin-bottom:8px}
   .panel p{font-size:13.5px;color:var(--ink2);line-height:1.75;margin-bottom:6px}
   .panel .big{font-size:52px;font-weight:800;color:var(--blue);letter-spacing:-2px;line-height:1.1;margin:14px 0 2px;font-variant-numeric:tabular-nums}
@@ -61,24 +64,65 @@
   .legend{display:flex;gap:14px;font-size:12px;color:var(--ink2);align-items:center;flex-wrap:wrap}
   .legend span{display:flex;align-items:center;gap:6px}
   .dot{width:11px;height:11px;border-radius:50%;display:inline-block}
-  .pad{display:none;grid-template-columns:repeat(3,62px);grid-template-rows:repeat(2,52px);gap:8px;justify-content:center;margin-top:18px}
-  .pad button{font-size:18px;padding:0;width:62px;height:52px;user-select:none;-webkit-user-select:none}
+  .pad{display:none;grid-template-columns:repeat(3,68px);grid-template-rows:repeat(2,58px);gap:10px;justify-content:center;margin-top:16px}
+  .pad button{font-size:20px;padding:0;width:68px;height:58px;touch-action:none}
   .pad .up{grid-column:2;grid-row:1}.pad .left{grid-column:1;grid-row:2}.pad .down{grid-column:2;grid-row:2}.pad .right{grid-column:3;grid-row:2}
   .pad .dash{grid-column:3;grid-row:1;font-size:12px;color:var(--orange)}
-  @media (pointer:coarse),(max-width:640px){.pad{display:grid}}
+  .touch-device .wrap{display:flex;flex-direction:column;min-height:100%}
+  .touch-device .wrap > *{flex-shrink:0}
+  .touch-device .pad{display:grid;margin-top:auto;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))}
+  @media (pointer:coarse){.pad{display:grid}}
+  /* iPad 等大屏触摸设备：放大按键 */
+  @media (pointer:coarse) and (min-width:700px){
+    .pad{grid-template-columns:repeat(3,76px);grid-template-rows:repeat(2,66px);gap:12px}
+    .pad button{width:76px;height:66px;font-size:22px}
+  }
+
+  /* 手机竖屏：HUD 压成一行，棋盘与方向键同屏可见 */
   @media (max-width:640px){
-    body{padding:16px 12px 28px}
-    .kpis{grid-template-columns:repeat(3,1fr);gap:8px}
-    .kpi{padding:9px 11px}.kpi .val{font-size:19px}
-    .brand{font-size:18px}.brand small{display:none}
-    .panel{padding:22px 20px}
+    body{padding:calc(10px + env(safe-area-inset-top,0px)) calc(8px + env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) calc(8px + env(safe-area-inset-left,0px))}
+    header{margin-bottom:8px;gap:8px}
+    .brand{font-size:16px}.brand small{display:none}
+    .actions{gap:5px}.actions button{padding:6px 9px;font-size:11px}
+    .kpis{grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:8px}
+    .kpi{padding:6px 7px;border-radius:9px}
+    .kpi .lab{font-size:9px;margin-bottom:3px}.kpi .lab span{display:none}
+    .kpi .val{font-size:16px}.kpi .sub{display:none}
+    .bar{margin-top:4px;height:3px}
+    .stage{padding:5px;border-radius:12px}
+    .foot{display:none}
+    .panel{padding:20px 18px;max-height:calc(100vh - 32px)}
+    .panel h2{font-size:21px}.panel p{font-size:12.5px}
+    .rules3{font-size:12px;padding:10px 12px;margin:12px 0 16px;line-height:1.75}
+    .keys{font-size:11px;margin-top:12px}
+    .pad{margin-top:12px}
+  }
+
+  /* 手机横屏 / 矮屏：外壳让位给棋盘，改用滑动手势 */
+  @media (orientation:landscape) and (max-height:560px){
+    body{padding:6px calc(8px + env(safe-area-inset-right,0px)) 6px calc(8px + env(safe-area-inset-left,0px))}
+    header{margin-bottom:5px}
+    .brand{font-size:14px}.brand small{display:none}
+    .actions button{padding:4px 8px;font-size:10px}
+    .kpis{grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:5px}
+    .kpi{padding:4px 7px;border-radius:8px}
+    .kpi .lab{font-size:8px;margin-bottom:1px}.kpi .lab span{display:none}
+    .kpi .val{font-size:14px}.kpi .sub{display:none}
+    .bar{margin-top:3px;height:3px}
+    .stage{padding:4px;border-radius:10px}
+    .foot{display:none}
+    .touch-device .pad,.pad{display:none}
+    .panel{padding:14px 18px;max-height:calc(100vh - 16px)}
+    .panel h2{font-size:19px}.panel p{font-size:12px}
+    .rules3{margin:8px 0 12px;padding:8px 12px;font-size:11px;line-height:1.6}
+    .keys{margin-top:8px;font-size:10px}
   }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="brand"><em>REVERSE</em> SNAKE <small>SIMULATION // 反向贪吃蛇 MVP v1.3</small></div>
+    <div class="brand"><em>REVERSE</em> SNAKE <small>SIMULATION // 反向贪吃蛇 MVP v1.4</small></div>
     <div class="actions">
       <button id="btnPause">暂停 P</button>
       <button id="btnSound">音效 开</button>
@@ -142,7 +186,13 @@
   const stage = document.getElementById('stage');
   const overlay = document.getElementById('overlay');
   const panel = document.getElementById('panel');
+  const headerEl = document.querySelector('header');
+  const kpisEl = document.querySelector('.kpis');
+  const padEl = document.querySelector('.pad');
   const $ = id => document.getElementById(id);
+  const isTouchDevice = ('ontouchstart' in window) ||
+    (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0);
+  if (isTouchDevice && document.body) document.body.classList.add('touch-device');
 
   // ---------- state ----------
   let cell = 24, dpr = 1, W = 0, H = 0;
@@ -372,10 +422,21 @@
 
   // ---------- render ----------
   function resize() {
-    const avail = Math.min(880, (stage.clientWidth || 920) - 24, window.innerWidth - 40);
-    cell = Math.max(11, Math.floor(avail / COLS));
+    // 同时受可用宽度与可用高度约束：横屏/分屏时棋盘也不会顶出屏幕
+    const vw = window.innerWidth || 960, vh = window.innerHeight || 900;
+    const compact = vw <= 640 || vh <= 560;
+    const stagePad = compact ? 12 : 24;
+    const availW = Math.min(880, (stage.clientWidth || 920) - stagePad, vw - (compact ? 16 : 40));
+    const padVisible = padEl && typeof getComputedStyle === 'function' &&
+      getComputedStyle(padEl).display !== 'none';
+    const chromeH = ((headerEl && headerEl.offsetHeight) || 0)
+      + ((kpisEl && kpisEl.offsetHeight) || 0)
+      + (padVisible ? ((padEl && padEl.offsetHeight) || 0) + 18 : 0)
+      + (compact ? 40 : 70);
+    const availH = Math.max(180, vh - chromeH);
+    cell = Math.max(9, Math.floor(Math.min(availW / COLS, availH / ROWS)));
     W = COLS * cell; H = ROWS * cell;
-    dpr = window.devicePixelRatio || 1;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);   // 手机上限制 2x，避免无谓的 GPU 开销
     canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
     canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -599,7 +660,7 @@
         <div><b>3</b> · 分数越高空间越小，看你能撑到几分</div>
       </div>
       <button class="primary" data-act="start">开始游戏</button>
-      <div class="keys"><kbd>↑↓←→</kbd> / <kbd>WASD</kbd> 移动　<kbd>Space</kbd> 冲刺　<kbd>P</kbd> 暂停　<kbd>R</kbd> 重开</div>
+      <div class="keys"><kbd>↑↓←→</kbd> / <kbd>WASD</kbd> 移动　<kbd>Space</kbd> 冲刺　<kbd>P</kbd> 暂停　<kbd>R</kbd> 重开<br>手机 / 平板：棋盘上滑动转向 · 点按冲刺 · 也可用下方方向键</div>
     `);
   }
   function pausePanel() {
@@ -677,15 +738,29 @@
       if (b.dataset.dir) setDir(b.dataset.dir); else dash();
     });
   });
-  let touchStart = null;
-  canvas.addEventListener('touchstart', e => { touchStart = {x:e.touches[0].clientX, y:e.touches[0].clientY}; }, {passive:true});
-  canvas.addEventListener('touchend', e => {
-    if (!touchStart) return;
-    const t = e.changedTouches[0], dx = t.clientX-touchStart.x, dy = t.clientY-touchStart.y;
-    touchStart = null;
-    if (Math.max(Math.abs(dx),Math.abs(dy)) < 18) { dash(); return; }
-    setDir(Math.abs(dx) > Math.abs(dy) ? (dx>0?'right':'left') : (dy>0?'down':'up'));
+  let touchStart = null, touchLast = null, touchMoved = false;
+  canvas.addEventListener('touchstart', e => {
+    const t = e.touches[0]; if (!t) return;
+    touchStart = {x:t.clientX, y:t.clientY};
+    touchLast = {x:t.clientX, y:t.clientY};
+    touchMoved = false;
   }, {passive:true});
+  // 滑动过程中实时转向：可连续拐弯，不用抬手
+  canvas.addEventListener('touchmove', e => {
+    if (!touchStart || !touchLast || !e.touches[0]) return;
+    const t = e.touches[0];
+    const dx = t.clientX - touchLast.x, dy = t.clientY - touchLast.y;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 16) return;
+    touchMoved = true;
+    setDir(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
+    touchLast = {x:t.clientX, y:t.clientY};
+  }, {passive:true});
+  const endTouch = () => {
+    if (touchStart && !touchMoved) dash();   // 点按棋盘 = 冲刺
+    touchStart = null; touchLast = null; touchMoved = false;
+  };
+  canvas.addEventListener('touchend', endTouch, {passive:true});
+  canvas.addEventListener('touchcancel', endTouch, {passive:true});
 
   // ---------- loop ----------
   function frame(now) {
@@ -711,7 +786,10 @@
     requestAnimationFrame(frame);
   }
 
-  window.addEventListener('resize', () => { resize(); render(performance.now()); });
+  const relayout = () => { resize(); render(performance.now()); };
+  window.addEventListener('resize', relayout);
+  window.addEventListener('orientationchange', () => setTimeout(relayout, 260));
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', relayout);
   resize();
   reset();
   readyPanel();
