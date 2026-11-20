@@ -64,14 +64,20 @@
   .legend{display:flex;gap:14px;font-size:12px;color:var(--ink2);align-items:center;flex-wrap:wrap}
   .legend span{display:flex;align-items:center;gap:6px}
   .dot{width:11px;height:11px;border-radius:50%;display:inline-block}
-  .pad{display:none;grid-template-columns:repeat(3,68px);grid-template-rows:repeat(2,58px);gap:10px;justify-content:center;margin-top:16px}
+  .pad{display:none;grid-template-columns:repeat(3,68px);grid-template-rows:repeat(2,58px);gap:10px;justify-content:center;margin-top:auto;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))}
   .pad button{font-size:20px;padding:0;width:68px;height:58px;touch-action:none}
   .pad .up{grid-column:2;grid-row:1}.pad .left{grid-column:1;grid-row:2}.pad .down{grid-column:2;grid-row:2}.pad .right{grid-column:3;grid-row:2}
   .pad .dash{grid-column:3;grid-row:1;font-size:12px;color:var(--orange)}
   .touch-device .wrap{display:flex;flex-direction:column;min-height:100%}
   .touch-device .wrap > *{flex-shrink:0}
-  .touch-device .pad{display:grid;margin-top:auto;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))}
-  @media (pointer:coarse){.pad{display:grid}}
+  .touch-device .foot{display:none}
+  .touch-device .stage{margin-top:auto}
+  .show-pad .pad{display:grid}
+  #btnPad{display:none}
+  .touch-device #btnPad{display:inline-block}
+  .gesture-hint{display:none}
+  .touch-device .gesture-hint{display:block;margin-top:auto;text-align:center;font-size:12px;color:var(--ink2);padding-top:10px}
+  .show-pad .gesture-hint{display:none}
   /* iPad 等大屏触摸设备：放大按键 */
   @media (pointer:coarse) and (min-width:700px){
     .pad{grid-template-columns:repeat(3,76px);grid-template-rows:repeat(2,66px);gap:12px}
@@ -95,7 +101,7 @@
     .panel h2{font-size:21px}.panel p{font-size:12.5px}
     .rules3{font-size:12px;padding:10px 12px;margin:12px 0 16px;line-height:1.75}
     .keys{font-size:11px;margin-top:12px}
-    .pad{margin-top:12px}
+    .touch-device .gesture-hint{font-size:11px}
   }
 
   /* 手机横屏 / 矮屏：外壳让位给棋盘，改用滑动手势 */
@@ -111,7 +117,9 @@
     .bar{margin-top:3px;height:3px}
     .stage{padding:4px;border-radius:10px}
     .foot{display:none}
-    .touch-device .pad,.pad{display:none}
+    .show-pad .pad,.pad{display:none}
+    .touch-device .gesture-hint{display:none}
+    .touch-device #btnPad{display:none}
     .panel{padding:14px 18px;max-height:calc(100vh - 16px)}
     .panel h2{font-size:19px}.panel p{font-size:12px}
     .rules3{margin:8px 0 12px;padding:8px 12px;font-size:11px;line-height:1.6}
@@ -122,10 +130,11 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="brand"><em>REVERSE</em> SNAKE <small>SIMULATION // 反向贪吃蛇 MVP v1.4</small></div>
+    <div class="brand"><em>REVERSE</em> SNAKE <small>SIMULATION // 反向贪吃蛇 MVP v1.5</small></div>
     <div class="actions">
       <button id="btnPause">暂停 P</button>
       <button id="btnSound">音效 开</button>
+      <button id="btnPad">方向键 关</button>
       <button id="btnRestart">重开 R</button>
     </div>
   </header>
@@ -163,6 +172,7 @@
     <button class="down" data-dir="down">↓</button>
     <button class="right" data-dir="right">→</button>
   </div>
+  <div class="gesture-hint">在棋盘上滑动转向 · 点按冲刺</div>
 </div>
 
 <script>
@@ -170,7 +180,8 @@
   'use strict';
 
   // ---------- config ----------
-  const COLS = 26, ROWS = 18;
+  // 竖屏用 18x26、横屏/桌面用 26x18：面积同为 468 格，但竖屏单个格子大得多
+  let COLS = 26, ROWS = 18, gridMode = 'wide';
   const PLAYER_MS = 112;          // 玩家每格耗时（固定）
   const SNAKE_BASE = 235;         // 蛇初始每格耗时（明显比玩家慢）
   const SNAKE_MIN = 108;          // 蛇最快每格耗时
@@ -186,9 +197,6 @@
   const stage = document.getElementById('stage');
   const overlay = document.getElementById('overlay');
   const panel = document.getElementById('panel');
-  const headerEl = document.querySelector('header');
-  const kpisEl = document.querySelector('.kpis');
-  const padEl = document.querySelector('.pad');
   const $ = id => document.getElementById(id);
   const isTouchDevice = ('ontouchstart' in window) ||
     (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0);
@@ -238,8 +246,13 @@
   // ---------- setup ----------
   function reset() {
     snake = [];
-    for (let i = 0; i < 5; i++) snake.push({x: 22 - i, y: 4});
-    player = {x: 4, y: 12};
+    if (gridMode === 'tall') {
+      for (let i = 0; i < 5; i++) snake.push({x: 14 - i, y: 3});
+      player = {x: 4, y: 20};
+    } else {
+      for (let i = 0; i < 5; i++) snake.push({x: 22 - i, y: 4});
+      player = {x: 4, y: 12};
+    }
     dir = {x:0,y:0};
     dirQueue = [];
     score = 0;
@@ -425,21 +438,43 @@
     // 同时受可用宽度与可用高度约束：横屏/分屏时棋盘也不会顶出屏幕
     const vw = window.innerWidth || 960, vh = window.innerHeight || 900;
     const compact = vw <= 640 || vh <= 560;
+    // 竖屏改成纵向网格：格子变大、地图填满屏幕；旋转时由 relayout 重开一局
+    const nextMode = vh > vw * 1.15 ? 'tall' : 'wide';
+    let changed = false;
+    if (nextMode !== gridMode) {
+      gridMode = nextMode;
+      COLS = nextMode === 'tall' ? 18 : 26;
+      ROWS = nextMode === 'tall' ? 26 : 18;
+      changed = true;
+    }
     const stagePad = compact ? 12 : 24;
     const availW = Math.min(880, (stage.clientWidth || 920) - stagePad, vw - (compact ? 16 : 40));
-    const padVisible = padEl && typeof getComputedStyle === 'function' &&
-      getComputedStyle(padEl).display !== 'none';
-    const chromeH = ((headerEl && headerEl.offsetHeight) || 0)
-      + ((kpisEl && kpisEl.offsetHeight) || 0)
-      + (padVisible ? ((padEl && padEl.offsetHeight) || 0) + 18 : 0)
-      + (compact ? 40 : 70);
+    // 只估算可见外壳高度（不计 flex 的 auto margin），再按真实溢出逐格收缩
+    let chromeH = compact ? 30 : 50;
+    if (typeof getComputedStyle === 'function') {
+      for (const el of document.querySelectorAll('.wrap > *')) {
+        if (el === stage) continue;
+        if (getComputedStyle(el).display === 'none') continue;
+        chromeH += el.offsetHeight || 0;
+      }
+    }
     const availH = Math.max(180, vh - chromeH);
-    cell = Math.max(9, Math.floor(Math.min(availW / COLS, availH / ROWS)));
-    W = COLS * cell; H = ROWS * cell;
-    dpr = Math.min(window.devicePixelRatio || 1, 2);   // 手机上限制 2x，避免无谓的 GPU 开销
-    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
-    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    const base = Math.max(9, Math.floor(Math.min(availW / COLS, availH / ROWS)));
+    dpr = Math.min(window.devicePixelRatio || 1, 2);   // 手机上限制 2x
+    const applySize = c => {
+      cell = c;
+      W = COLS * cell; H = ROWS * cell;
+      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+      canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    };
+    applySize(base);
+    // 兜底：按实际布局溢出收缩，iPad 大屏 / 分屏也不会顶出屏幕
+    if (document.body && document.body.scrollHeight) {
+      let guard = 0;
+      while (document.body.scrollHeight > vh && cell > 9 && guard++ < 14) applySize(cell - 1);
+    }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return changed;
   }
 
   function roundRect(x,y,w,h,r) {
@@ -511,7 +546,7 @@
     ctx.fillStyle = 'rgba(140,185,235,.34)';
     ctx.font = '600 ' + Math.max(8, Math.round(cell*.30)) + 'px ui-monospace, SFMono-Regular, Menlo, monospace';
     ctx.textAlign = 'right'; ctx.textBaseline = 'top';
-    ctx.fillText('GRID 26x18  //  SECTOR 07', W - 12, 10);
+    ctx.fillText('GRID ' + COLS + 'x' + ROWS + '  //  SECTOR 07', W - 12, 10);
     ctx.textAlign = 'left';
 
     // 边缘威胁光：取代格子标记，只在蛇贴到 3 格内才出现
@@ -660,7 +695,7 @@
         <div><b>3</b> · 分数越高空间越小，看你能撑到几分</div>
       </div>
       <button class="primary" data-act="start">开始游戏</button>
-      <div class="keys"><kbd>↑↓←→</kbd> / <kbd>WASD</kbd> 移动　<kbd>Space</kbd> 冲刺　<kbd>P</kbd> 暂停　<kbd>R</kbd> 重开<br>手机 / 平板：棋盘上滑动转向 · 点按冲刺 · 也可用下方方向键</div>
+      <div class="keys"><kbd>↑↓←→</kbd> / <kbd>WASD</kbd> 移动　<kbd>Space</kbd> 冲刺　<kbd>P</kbd> 暂停　<kbd>R</kbd> 重开<br>手机 / 平板：棋盘上滑动转向 · 点按冲刺 · 需要屏幕按钮可在右上角开启</div>
     `);
   }
   function pausePanel() {
@@ -732,6 +767,23 @@
     soundOn = !soundOn;
     $('btnSound').textContent = '音效 ' + (soundOn ? '开' : '关');
   });
+  // 默认滑动手势；屏幕按钮作为可选辅助，状态记忆在本机
+  let padEnabled = false;
+  try { padEnabled = localStorage.getItem('reverse-snake-pad') === '1'; } catch(e) {}
+  const applyPad = () => {
+    if (document.body && document.body.classList) {
+      if (padEnabled) document.body.classList.add('show-pad');
+      else document.body.classList.remove('show-pad');
+    }
+    $('btnPad').textContent = '方向键 ' + (padEnabled ? '开' : '关');
+  };
+  $('btnPad').addEventListener('click', () => {
+    padEnabled = !padEnabled;
+    try { localStorage.setItem('reverse-snake-pad', padEnabled ? '1' : '0'); } catch(e) {}
+    applyPad();
+    relayout();
+  });
+  applyPad();
   document.querySelectorAll('.pad button').forEach(b => {
     b.addEventListener('pointerdown', e => {
       e.preventDefault();
@@ -786,7 +838,13 @@
     requestAnimationFrame(frame);
   }
 
-  const relayout = () => { resize(); render(performance.now()); };
+  const relayout = () => {
+    const changed = resize();
+    if (!changed) { render(performance.now()); return; }
+    // 网格方向变了，旧坐标可能越界：重开一局（ready 时只重置棋盘）
+    if (state === 'ready') { reset(); render(performance.now()); }
+    else start();
+  };
   window.addEventListener('resize', relayout);
   window.addEventListener('orientationchange', () => setTimeout(relayout, 260));
   if (window.visualViewport) window.visualViewport.addEventListener('resize', relayout);
