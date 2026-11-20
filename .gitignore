@@ -1,0 +1,21 @@
+# WorkBuddy 本地项目数据（工作日志、会话配置），非项目源码
+.workbuddy/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# 本地预览 / 调试副本（正式入口只有 reverse-snake/index.html）
+*-preview.html
+*-local.html
+*.tmp.html
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+
+# 日志与依赖
+*.log
+node_modules/
