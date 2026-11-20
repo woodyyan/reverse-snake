@@ -6,12 +6,14 @@
 
 ## 运行
 
-直接双击 `reverse-snake/index.html`，或起一个静态服务：
+直接双击 `index.html`，或起一个静态服务：
 
 ```bash
 python3 -m http.server 8000
-# 打开 http://localhost:8000/reverse-snake/
+# 打开 http://localhost:8000/
 ```
+
+`index.html` 位于仓库根目录，即静态托管的默认入口。Vercel / GitHub Pages / Netlify 导入仓库即可，无需任何构建或路径配置。
 
 ## 操作
 
@@ -48,8 +50,10 @@ python3 -m http.server 8000
 ## 结构
 
 ```
-reverse-snake/
-└── index.html   # 全部 HTML / CSS / JS
+.
+├── index.html   # 全部 HTML / CSS / JS
+├── README.md
+└── .gitignore
 ```
 
 调参入口在 `index.html` 顶部 `config` 区：`COLS/ROWS`、`PLAYER_MS`、`SNAKE_BASE/MIN`、`GROW`、`PLAN_STEPS`、`DASH_CD`。

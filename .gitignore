@@ -6,7 +6,7 @@
 .AppleDouble
 .LSOverride
 
-# 本地预览 / 调试副本（正式入口只有 reverse-snake/index.html）
+# 本地预览 / 调试副本（正式入口只有根目录 index.html）
 *-preview.html
 *-local.html
 *.tmp.html
