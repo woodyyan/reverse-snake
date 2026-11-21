@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>反向贪吃蛇 · Reverse Snake MVP</title>
+<title>反向贪吃蛇 · Reverse Snake</title>
 <style>
   :root{
     --bg:#FAFAFA; --card:#FFFFFF; --line:#E6EAF0; --ink:#111827; --ink2:#5B6577;
@@ -24,9 +24,8 @@
     overscroll-behavior:none; -webkit-tap-highlight-color:transparent;
   }
   .wrap{width:100%;max-width:960px}
-  header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap}
-  .brand{font-size:22px;font-weight:700;letter-spacing:-.4px;display:flex;align-items:baseline;gap:10px}
-  .brand small{font-size:10px;font-weight:650;color:var(--ink2);letter-spacing:1px;border:1px solid var(--line);border-radius:99px;padding:3px 10px;background:#fff}
+  header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:14px;flex-wrap:wrap}
+  .brand{font-size:22px;font-weight:750;letter-spacing:-.4px}
   .brand em{font-style:normal;color:var(--blue)}
   .actions{display:flex;gap:8px}
   button{font-family:inherit;cursor:pointer;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:13px;font-weight:600;padding:8px 13px;transition:.15s;touch-action:manipulation;user-select:none;-webkit-user-select:none}
@@ -34,15 +33,51 @@
   button:active{transform:translateY(1px)}
   button.primary{background:var(--blue);border-color:var(--blue);color:#fff;padding:11px 26px;font-size:15px}
   button.primary:hover{background:#1743BD;border-color:#1743BD}
-  .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
-  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:0 1px 2px rgba(16,24,40,.03)}
-  .kpi .lab{font-size:11px;color:var(--ink2);font-weight:600;letter-spacing:.3px;margin-bottom:6px}
-  .kpi .lab span{float:right;font-size:9px;letter-spacing:1px;font-weight:650;color:#B7C2D2}
-  .kpi .val{font-size:24px;font-weight:750;letter-spacing:-1px;font-variant-numeric:tabular-nums;line-height:1.1}
-  .kpi .val.blue{color:var(--blue)}
-  .kpi .sub{font-size:10px;color:#98A2B3;margin-top:4px}
-  .bar{height:5px;background:#EDF1F7;border-radius:99px;margin-top:9px;overflow:hidden}
-  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#3FC8FF,#1D4ED8,#FF9A4D);border-radius:99px;transition:width .25s}
+
+  /* 游戏化 HUD：深色能量仪表，与棋盘视窗同一套视觉语言 */
+  .kpis{
+    position:relative; display:grid; grid-template-columns:1.25fr .9fr 1fr 1fr 1.1fr;
+    gap:0; margin-bottom:12px; isolation:isolate;
+    background:linear-gradient(180deg,#0D1728 0%,#080E1B 100%);
+    border:1px solid #1E3452; border-radius:10px; overflow:hidden;
+    box-shadow:0 8px 24px rgba(8,20,44,.18), inset 0 1px 0 rgba(90,170,255,.14);
+  }
+  .kpis::before{content:'';position:absolute;left:0;right:0;top:0;height:1px;z-index:3;
+    background:linear-gradient(90deg,transparent,#3FC8FF 18%,#1D4ED8 65%,transparent);opacity:.75}
+  .kpi{position:relative;padding:9px 14px 12px;border-right:1px solid rgba(63,200,255,.10)}
+  .kpi:last-of-type{border-right:0}
+  .kpi.score-cell{background:linear-gradient(90deg,rgba(29,78,216,.20),transparent 85%);padding-left:18px}
+  .kpi.score-cell::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;
+    background:linear-gradient(180deg,#3FC8FF,#1D4ED8);box-shadow:0 0 10px rgba(63,200,255,.75)}
+  .kpi .lab{display:flex;align-items:center;gap:6px;font-size:9px;letter-spacing:1.2px;
+    color:#7189AC;font-weight:700;margin-bottom:3px;white-space:nowrap}
+  .kpi .lab span{order:-1;font-size:9px;letter-spacing:1.4px;font-weight:800;color:#3FC8FF}
+  .kpi .lab i.zh{font-style:normal;font-size:9px;letter-spacing:0;font-weight:600;color:#8CA3C2}
+  .kpi .lab em.state{margin-left:auto;font-style:normal;font-size:8px;letter-spacing:1.2px;font-weight:800;color:#7189AC}
+  .kpis.is-live .lab em.state{color:#3DFFC0}
+  .kpis.is-paused .lab em.state{color:#FF9A4D}
+  .kpis.is-over .lab em.state{color:#FF5C6E}
+  .kpi .pulse{width:6px;height:6px;border-radius:50%;background:#43577A;flex:none}
+  .kpis.is-live .pulse{background:#3DFFC0;animation:livePulse 1.6s ease-in-out infinite}
+  .kpis.is-paused .pulse{background:#FF9A4D}
+  .kpis.is-over .pulse{background:#FF5C6E;box-shadow:0 0 8px rgba(255,92,110,.8)}
+  @keyframes livePulse{0%,100%{opacity:1;box-shadow:0 0 4px rgba(61,255,192,.5)}50%{opacity:.4;box-shadow:0 0 12px rgba(61,255,192,.95)}}
+  .kpi .val{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:23px;font-weight:800;letter-spacing:-.5px;line-height:1.05;color:#EAF4FF;
+    font-variant-numeric:tabular-nums;text-shadow:0 0 14px rgba(63,200,255,.28)}
+  .kpi.score-cell .val{font-size:34px;line-height:1}
+  .kpi .val.blue{color:#3FC8FF;text-shadow:0 0 18px rgba(63,200,255,.6)}
+  @keyframes scorePop{0%{transform:scale(1.32);filter:brightness(1.9)}100%{transform:scale(1);filter:brightness(1)}}
+  .kpi .val.pop{animation:scorePop .38s cubic-bezier(.2,.8,.3,1)}
+  .bar{position:absolute;left:0;right:0;bottom:0;height:3px;z-index:3;
+    background:rgba(63,200,255,.08);overflow:hidden}
+  .bar i{display:block;height:100%;width:0;border-radius:0;
+    background:linear-gradient(90deg,#3FC8FF,#1D4ED8 55%,#FF9A4D 100%);
+    box-shadow:0 0 12px rgba(63,200,255,.65);transition:width .25s}
+  /* 版本号：固定在页面角落，不参与布局 */
+  .ver{position:fixed;right:calc(10px + env(safe-area-inset-right,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px));
+    z-index:2;pointer-events:none;font:600 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+    letter-spacing:1.2px;color:#8CA3C2;opacity:.6}
   .stage{position:relative;background:#070C17;border:1px solid #1B2A44;border-radius:16px;padding:12px;box-shadow:0 14px 44px rgba(10,26,55,.20);display:flex;justify-content:center;overflow:hidden}
   canvas{display:block;border-radius:8px;touch-action:none}
   .stage.shake{animation:shake .32s ease}
@@ -87,14 +122,19 @@
   /* 手机竖屏：HUD 压成一行，棋盘与方向键同屏可见 */
   @media (max-width:640px){
     body{padding:calc(10px + env(safe-area-inset-top,0px)) calc(8px + env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) calc(8px + env(safe-area-inset-left,0px))}
-    header{margin-bottom:8px;gap:8px}
-    .brand{font-size:16px}.brand small{display:none}
+    header{margin-bottom:7px;gap:8px}
+    .brand{font-size:16px}
     .actions{gap:5px}.actions button{padding:6px 9px;font-size:11px}
-    .kpis{grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:8px}
-    .kpi{padding:6px 7px;border-radius:9px}
-    .kpi .lab{font-size:9px;margin-bottom:3px}.kpi .lab span{display:none}
-    .kpi .val{font-size:16px}.kpi .sub{display:none}
-    .bar{margin-top:4px;height:3px}
+    .kpis{grid-template-columns:repeat(5,1fr);margin-bottom:8px;border-radius:9px}
+    .kpi{padding:5px 4px 8px}
+    .kpi.score-cell{padding-left:9px}
+    .kpi .lab{font-size:7px;letter-spacing:.4px;gap:3px;margin-bottom:2px}
+    .kpi .lab span{font-size:7px;letter-spacing:.4px}
+    .kpi .lab i.zh,.kpi .lab em.state{display:none}
+    .kpi .pulse{width:4px;height:4px}
+    .kpi .val{font-size:14px}
+    .kpi.score-cell .val{font-size:19px}
+    .bar{height:3px}
     .stage{padding:5px;border-radius:12px}
     .foot{display:none}
     .panel{padding:20px 18px;max-height:calc(100vh - 32px)}
@@ -108,13 +148,17 @@
   @media (orientation:landscape) and (max-height:560px){
     body{padding:6px calc(8px + env(safe-area-inset-right,0px)) 6px calc(8px + env(safe-area-inset-left,0px))}
     header{margin-bottom:5px}
-    .brand{font-size:14px}.brand small{display:none}
+    .brand{font-size:14px}
     .actions button{padding:4px 8px;font-size:10px}
-    .kpis{grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:5px}
-    .kpi{padding:4px 7px;border-radius:8px}
-    .kpi .lab{font-size:8px;margin-bottom:1px}.kpi .lab span{display:none}
-    .kpi .val{font-size:14px}.kpi .sub{display:none}
-    .bar{margin-top:3px;height:3px}
+    .kpis{margin-bottom:5px}
+    .kpi{padding:3px 7px 6px}
+    .kpi.score-cell{padding-left:11px}
+    .kpi .lab{font-size:8px;letter-spacing:.4px;gap:3px;margin-bottom:1px}
+    .kpi .lab span{font-size:8px;letter-spacing:.4px}
+    .kpi .lab i.zh{display:none}
+    .kpi .val{font-size:14px}
+    .kpi.score-cell .val{font-size:18px}
+    .bar{height:3px}
     .stage{padding:4px;border-radius:10px}
     .foot{display:none}
     .show-pad .pad,.pad{display:none}
@@ -130,7 +174,7 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="brand"><em>REVERSE</em> SNAKE <small>SIMULATION // 反向贪吃蛇 MVP v1.5</small></div>
+    <div class="brand"><em>REVERSE</em> SNAKE</div>
     <div class="actions">
       <button id="btnPause">暂停 P</button>
       <button id="btnSound">音效 开</button>
@@ -140,11 +184,12 @@
   </header>
 
   <div class="kpis">
-    <div class="kpi"><div class="lab">吃掉的点 <span>SCORE</span></div><div class="val blue" id="vScore">0</div><div class="sub">分数 = 极限</div></div>
-    <div class="kpi"><div class="lab">历史最高 <span>BEST</span></div><div class="val" id="vBest">0</div><div class="sub">本机记录</div></div>
-    <div class="kpi"><div class="lab">蛇的长度 <span>LENGTH</span></div><div class="val" id="vLen">5</div><div class="sub">每吃 +2 节</div></div>
-    <div class="kpi"><div class="lab">可用空间 <span>SPACE</span></div><div class="val" id="vSpace">100%</div><div class="sub">你还能去的地方</div></div>
-    <div class="kpi"><div class="lab">追击强度 <span>THREAT</span></div><div class="val" id="vSpeed">0%</div><div class="bar"><i id="barSpeed"></i></div></div>
+    <div class="kpi score-cell"><div class="lab"><span>SCORE</span><i class="zh">得分</i><em class="state" id="vState">STANDBY</em><i class="pulse"></i></div><div class="val blue" id="vScore">0</div></div>
+    <div class="kpi"><div class="lab"><span>BEST</span><i class="zh">最高</i></div><div class="val" id="vBest">0</div></div>
+    <div class="kpi"><div class="lab"><span>LENGTH</span><i class="zh">蛇长</i></div><div class="val" id="vLen">5</div></div>
+    <div class="kpi"><div class="lab"><span>SPACE</span><i class="zh">空间</i></div><div class="val" id="vSpace">100%</div></div>
+    <div class="kpi"><div class="lab"><span>THREAT</span><i class="zh">追击</i></div><div class="val" id="vSpeed">0%</div></div>
+    <span class="bar"><i id="barSpeed"></i></span>
   </div>
 
   <div class="stage" id="stage">
@@ -174,6 +219,7 @@
   </div>
   <div class="gesture-hint">在棋盘上滑动转向 · 点按冲刺</div>
 </div>
+<div class="ver">v1.6</div>
 
 <script>
 (() => {
@@ -665,8 +711,24 @@
   }
 
   // ---------- HUD / overlays ----------
+  let lastHudScore = 0;
+  function setHudState() {
+    const labels = {ready:'STANDBY', countdown:'GET READY', running:'LIVE', paused:'PAUSED', over:'GAME OVER'};
+    $('vState').textContent = labels[state] || 'LIVE';
+    const hud = document.querySelector('.kpis');
+    hud.classList.remove('is-live', 'is-paused', 'is-over');
+    if (state === 'running' || state === 'countdown') hud.classList.add('is-live');
+    else if (state === 'paused') hud.classList.add('is-paused');
+    else if (state === 'over') hud.classList.add('is-over');
+  }
   function updateHud() {
-    $('vScore').textContent = score;
+    setHudState();
+    const scEl = $('vScore');
+    scEl.textContent = score;
+    if (score !== lastHudScore) {
+      if (score > 0) { scEl.classList.remove('pop'); void scEl.offsetWidth; scEl.classList.add('pop'); }
+      lastHudScore = score;
+    }
     $('vBest').textContent = best;
     $('vLen').textContent = snake.length + pendingGrowth;
     const blocked = bodyBlocked(false);
@@ -674,7 +736,7 @@
     const free = COLS*ROWS - snake.length;
     const pct = clamp(Math.round(reach/Math.max(1,free)*100),0,100);
     $('vSpace').textContent = pct + '%';
-    $('vSpace').style.color = pct < 30 ? '#E5484D' : '';
+    $('vSpace').style.color = pct < 30 ? '#FF5C6E' : '';
     const lvl = Math.round((SNAKE_BASE - snakeMs())/(SNAKE_BASE - SNAKE_MIN)*100);
     $('vSpeed').textContent = lvl + '%';
     $('barSpeed').style.width = lvl + '%';
@@ -716,20 +778,21 @@
   function start() {
     reset();
     state = 'countdown'; countdown = 3000;
+    setHudState();
     hideOverlay();
     beep(520, .08, 'sine', .04);
   }
   function pause() {
     if (state !== 'running' && state !== 'countdown') return;
-    state = 'paused'; pausePanel();
+    state = 'paused'; setHudState(); pausePanel();
   }
   function resume() {
     if (state !== 'paused') return;
-    state = 'running'; hideOverlay(); last = performance.now();
+    state = 'running'; setHudState(); hideOverlay(); last = performance.now();
   }
   function gameOver(reason) {
     if (state === 'over') return;
-    state = 'over'; overReason = reason;
+    state = 'over'; setHudState(); overReason = reason;
     burst(player.x, player.y, '#FF5C6E', 26);
     beep(150, .35, 'sawtooth', .06);
     stage.classList.add('shake');
@@ -821,7 +884,7 @@
 
     if (state === 'countdown') {
       countdown -= dt;
-      if (countdown <= 0) { state = 'running'; playerAcc = 0; snakeAcc = 0; }
+      if (countdown <= 0) { state = 'running'; playerAcc = 0; snakeAcc = 0; setHudState(); }
     }
     if (state === 'running') {
       playerAcc += dt; hudAcc += dt;
