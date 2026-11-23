@@ -1,6 +1,6 @@
 import SwiftUI
 
-// MARK: - Top bar (pause / sound / restart only)
+// MARK: - Top bar: logo + brand + unified dark energy icon controls
 
 struct HeaderBar: View {
     @ObservedObject var engine: GameEngine
@@ -27,14 +27,32 @@ struct HeaderBar: View {
 
             Spacer(minLength: 4)
 
-            HStack(spacing: m.compact ? 5 : 8) {
-                TopButton(title: engine.phase == .paused ? "继续" : "暂停", m: m) {
+            HStack(spacing: m.compact ? 6 : 8) {
+                EnergyIconButton(
+                    systemName: engine.phase == .paused ? "play.fill" : "pause.fill",
+                    label: engine.phase == .paused ? "继续" : "暂停",
+                    tint: engine.phase == .paused ? Theme.orange : Theme.cyan,
+                    m: m
+                ) {
                     if engine.phase == .paused { engine.resume() } else { engine.pause() }
                 }
-                TopButton(title: engine.soundOn ? "音效开" : "音效关", m: m) {
+
+                EnergyIconButton(
+                    systemName: engine.soundOn ? "speaker.wave.2.fill" : "speaker.slash.fill",
+                    label: engine.soundOn ? "音效开" : "音效关",
+                    tint: engine.soundOn ? Theme.cyan : Theme.hudLabel,
+                    m: m
+                ) {
                     engine.soundOn.toggle()
+                    Haptics.shared.tap()
                 }
-                TopButton(title: "重开", m: m) {
+
+                EnergyIconButton(
+                    systemName: "arrow.counterclockwise",
+                    label: "重开",
+                    tint: Theme.cyan,
+                    m: m
+                ) {
                     engine.start()
                 }
             }
@@ -44,24 +62,46 @@ struct HeaderBar: View {
     }
 }
 
-private struct TopButton: View {
-    let title: String
+/// One dark energy panel per control: HUD gradient + border + cyan glow,
+/// so the three buttons read as a single control cluster instead of system buttons.
+private struct EnergyIconButton: View {
+    let systemName: String
+    let label: String
+    let tint: Color
     let m: LayoutMetrics
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            Text(title)
-                .font(.system(size: m.buttonFont, weight: .semibold))
-                .lineLimit(1)
-                .minimumScaleFactor(0.65)
-                .foregroundColor(Theme.ink)
-                .padding(.vertical, m.buttonPadV)
-                .padding(.horizontal, m.buttonPadH)
-                .background(Theme.card)
-                .clipShape(RoundedRectangle(cornerRadius: 9))
-                .overlay(RoundedRectangle(cornerRadius: 9).stroke(Theme.line, lineWidth: 1))
+            ZStack {
+                RoundedRectangle(cornerRadius: m.controlRadius)
+                    .fill(LinearGradient(colors: [Theme.hudTop, Theme.hudBottom],
+                                         startPoint: .top, endPoint: .bottom))
+                RoundedRectangle(cornerRadius: m.controlRadius)
+                    .fill(LinearGradient(colors: [Theme.cyan.opacity(0.10), Color.clear],
+                                         startPoint: .top, endPoint: .bottom))
+                Image(systemName: systemName)
+                    .font(.system(size: m.controlIcon, weight: .bold))
+                    .foregroundColor(tint)
+                    .shadow(color: tint.opacity(0.55), radius: 5)
+            }
+            .frame(width: m.controlSize, height: m.controlSize)
+            .overlay(
+                RoundedRectangle(cornerRadius: m.controlRadius)
+                    .stroke(Theme.hudBorder, lineWidth: 1)
+            )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(EnergyPressStyle())
+        .accessibilityLabel(label)
+    }
+}
+
+/// Shared press feedback for top-bar icon buttons and dialog primary buttons.
+struct EnergyPressStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.88 : 1)
+            .brightness(configuration.isPressed ? 0.30 : 0)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
     }
 }

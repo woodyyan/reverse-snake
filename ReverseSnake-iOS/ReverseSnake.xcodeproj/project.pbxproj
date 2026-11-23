@@ -17,6 +17,7 @@
 		A1B2C3D40000000000000027 /* ControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40000000000000017 /* ControlsView.swift */; };
 		A1B2C3D40000000000000028 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40000000000000018 /* ContentView.swift */; };
 		A1B2C3D40000000000000029 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40000000000000019 /* Assets.xcassets */; };
+		A1B2C3D4000000000000002A /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4000000000000001A /* Haptics.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +32,7 @@
 		A1B2C3D40000000000000017 /* ControlsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlsView.swift; sourceTree = "<group>"; };
 		A1B2C3D40000000000000018 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A1B2C3D40000000000000019 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A1B2C3D4000000000000001A /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,6 +70,7 @@
 				A1B2C3D40000000000000011 /* Theme.swift */,
 				A1B2C3D40000000000000012 /* GameEngine.swift */,
 				A1B2C3D40000000000000013 /* SoundEngine.swift */,
+				A1B2C3D4000000000000001A /* Haptics.swift */,
 				A1B2C3D40000000000000014 /* GameBoardView.swift */,
 				A1B2C3D40000000000000015 /* HUDView.swift */,
 				A1B2C3D40000000000000016 /* OverlayViews.swift */,
@@ -156,6 +159,7 @@
 				A1B2C3D40000000000000026 /* OverlayViews.swift in Sources */,
 				A1B2C3D40000000000000027 /* ControlsView.swift in Sources */,
 				A1B2C3D40000000000000028 /* ContentView.swift in Sources */,
+				A1B2C3D4000000000000002A /* Haptics.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

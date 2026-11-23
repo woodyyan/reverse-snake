@@ -50,10 +50,11 @@ ReverseSnake-iOS/
     ├── Theme.swift                  # 调色板 + LayoutMetrics + 动态网格计算
     ├── GameEngine.swift             # 状态机 / 蛇 AI / BFS / flood fill / 计分 / 粒子 / 存档
     ├── SoundEngine.swift            # AVAudioEngine 波形合成（WebAudio 等价）
+    ├── Haptics.swift                # UIFeedbackGenerator 震动反馈（按事件分级）
     ├── GameBoardView.swift          # UIView + CGContext 渲染、CADisplayLink、触控
     ├── HUDView.swift                # 5 项深色能量仪表 HUD
-    ├── OverlayViews.swift           # 开始 / 暂停 / 结算面板 + 毛玻璃遮罩（全部提示在这里）
-    ├── ControlsView.swift           # 左上角 Logo + 顶部按钮（暂停 / 音效 / 重开）
+    ├── OverlayViews.swift           # 深色能量弹框（开局 / 暂停 / 结算）+ 毛玻璃遮罩 + 高亮操作提示
+    ├── ControlsView.swift           # 左上角 Logo + 深色能量图标按钮（暂停 / 音效 / 重开）
     └── ContentView.swift            # 满屏棋盘布局、动态网格、抖动动画、前后台暂停
 ```
 
@@ -67,11 +68,15 @@ ReverseSnake-iOS/
 |---|---|
 | 棋盘上滑动 | 设定持续移动方向，可连续拐弯 |
 | 点按棋盘 | 冲刺 2 格（CD 2.6s） |
-| 顶部按钮 | 暂停 / 继续、音效开关、重开 |
+| 右上角 3 个图标按钮 | 暂停 / 继续、音效开关、重开 |
 
-开始前提示面板只保留一句话玩法说明与「棋盘上滑动转向 · 点按冲刺」，游戏中不占任何屏幕空间。暂停、重开、音效都走顶部按钮。App 退到后台自动暂停。
+开始前提示面板保留三行规则与两个高亮操作芯片（滑动转向 / 点按冲刺），游戏中不占任何屏幕空间。暂停、重开、音效都走顶部按钮。App 退到后台自动暂停。
+
+**顶栏控制**：3 个按钮统一为深色能量面板（HUD 同款 `hudTop → hudBottom` 渐变 + `hudBorder` 描边 + 青色发光图标），取代原白色文字按钮。图标为 `pause.fill` / `play.fill`（暂停 / 继续，暂停态橙色呼应 HUD 状态灯）、`speaker.wave.2.fill` / `speaker.slash.fill`（音效开 / 关，关闭时灰蓝）、`arrow.counterclockwise`（重开）；按压有缩放 + 高亮反馈，中文语义保留在 `accessibilityLabel`。与左上角 Logo、下方深色 HUD 构成同一控制语言。
 
 > 虚拟方向键、外接键盘支持、底部手势提示 / 玩法说明、角落版本号、`P` / `R` / `Return` 等键盘文案均已移除，只保留滑动玩法。
+
+**弹框统一设计**：开局 / 暂停 / 结算三面板共用深色能量卡片（HUD 渐变、`hudBorder` 描边、顶部扫描线、四角准星、等宽状态铭牌 + 状态灯），取代原白色表单卡片。主按钮为青→蓝能量渐变 + 按压反馈；开局页用两个 `OperationChip` 高亮操作方式（图标 + 中文动作 + 等宽说明），取代原来不起眼的一行灰字；结算页用 `SCORE` 铭牌 + 发光大分数 + LENGTH / BEST 单元格替代长句。文字量未增加，操作信息更醒目。
 
 ## 功能对照（网页版 → iOS 等效实现）
 
@@ -80,6 +85,7 @@ ReverseSnake-iOS/
 | Canvas 2D `render()` | `UIView.draw(_:)` + `CGContext` | 深空渐变、精密网格、扫描带、四角准星、GRID 铭牌、蛇能量脊节/蛇头、玩家信标、晶体锁定环、粒子、逼近红色边缘光、3 秒倒计时，逐项 1:1 移植 |
 | `requestAnimationFrame` | `CADisplayLink` | 同一 90ms dt 上限 |
 | WebAudio `OscillatorNode` | `AVAudioEngine` + `AVAudioPlayerNode` PCM buffer | sine / triangle / sawtooth，指数衰减包络；开始 520、得分 660、冲刺 300、断尾 230、死亡 150Hz |
+| — | `UIFeedbackGenerator`（iOS 原生增强） | 按事件分级震动，详见下方「震动反馈」 |
 | `localStorage` | `UserDefaults` | `reverse-snake-best`（最高分）、`reverse-snake-sound`（音效开关，iOS 额外持久化） |
 | `touchstart/move/end` | `touchesBegan/Moved/Ended` | 16pt 阈值、连续转向、点按冲刺、`touchesCancelled` 兜底 |
 | CSS `@keyframes shake` / 脉冲 / `scorePop` | `GeometryEffect` + SwiftUI `withAnimation` | 死亡抖动、LIVE 呼吸灯、得分数字放大高亮 |
@@ -87,6 +93,21 @@ ReverseSnake-iOS/
 | CSS 媒体查询 / `env(safe-area-inset)` / `visualViewport.resize` | `GeometryReader` + `LayoutMetrics` + SwiftUI safe area | 动态网格铺满屏幕；旋转 / 分屏自动重排并重开一局；刘海与 Home Indicator 避让 |
 
 **音频会话**：`AVAudioSession.setCategory` / `setActive` 是同步 IPC，主线程调用会触发 Xcode 的 AVAudioSession Hang Risk 诊断（"This method can lead to UI unresponsiveness..."）。所有会话与引擎初始化都在串行队列 `sessionQueue` 执行；iOS 27+ 走 `activate(options:completionHandler:)` 异步激活，iOS 16–26 走队列内同步激活兜底。`ReverseSnakeApp.init()` 预热 `SoundEngine.shared`，避免首次音效因懒加载丢失。
+
+**震动反馈**（iOS 原生增强，`Haptics.swift`）：按事件分级，刻意避开高频节点，避免震成一片。
+
+| 节点 | 反馈 |
+|---|---|
+| 开始 / 重开 / 暂停 / 继续 / 音效开关 | `UISelectionFeedbackGenerator` |
+| 倒计时 2 / 1 | `UIImpactFeedbackGenerator(.light)` |
+| 倒计时结束起跑 | `.medium` |
+| 点按冲刺 | `.rigid` |
+| 吃到晶体 | `UISelectionFeedbackGenerator` |
+| 蛇自锁断尾 | `.soft` |
+| 撞蛇身 / 被追上 | `UINotificationFeedbackGenerator(.error)` |
+| 滑动转向、蛇每步移动 | 不震动 |
+
+所有触发保证在主线程；`prepare()` 在 App 启动时预热，每次触发后重新预热以降低延迟。震动无独立开关，与音效开关解耦。
 
 ## 玩法规则（与网页版一致）
 
@@ -102,12 +123,16 @@ ReverseSnake-iOS/
 - iPhone 16 Pro（iOS 18.6，动态网格 16×29）、iPad Pro 11-inch（M4，19×25）均安装、启动、运行无崩溃。
 - 实测截图覆盖：开始页（精简提示）、游戏进行中（棋盘/蛇/玩家/晶体/HUD）、结算页、暂停页；棋盘上下左右留白极小，两种设备均无裁切、无溢出。
 - AppIcon 与 Logo 已验证：主屏幕显示深空网格 / 橙点 / 青色能量蛇 / 青绿晶体图标；iPhone / iPad 顶栏 Logo 与标题、三个按钮无重叠。
+- 新增 `Haptics.swift` 并接入 9 类事件节点；`xcodebuild build` 成功、模拟器启动无崩溃、无 haptic 运行时错误。模拟器不产生真实触觉，手感需真机体验。
+- 开局 / 暂停 / 结算三面板重做为深色能量卡片，iPhone 三状态截图 + iPad 开局截图验证：铭牌完整、操作芯片醒目、分数与 KPI 清晰、无裁切与重叠。
+- 顶栏 3 个文字按钮改为深色能量图标按钮（SF Symbols），iPhone / iPad 截图验证与 HUD / Logo 视觉统一、无布局重叠；5 个符号名称经系统校验有效。
 - 修复 Xcode AVAudioSession Hang Risk 诊断：音频会话初始化移出主线程（iOS 27+ 异步 activate，旧系统串行队列），冷启动日志确认 `AVAudioEngine` 正常 `start`、无主线程卡顿诊断。
 - 修复项：Core Graphics 径向渐变默认不绘制起始半径内区域，导致棋盘中心出现黑洞；已改用 `.drawsBeforeStartLocation` + `.drawsAfterEndLocation`，与 Canvas 2D 行为一致。
 - 工程曾被 Xcode 自动升级写入 `IPHONEOS_DEPLOYMENT_TARGET = 27.0`（导致装不进 iOS 18.6 模拟器），已恢复为 16.0；Bundle ID 保持 `com.woodystudio.reversesnake`。
 
 ## 备注
 
+- 震动无独立开关（跟随系统 Taptic 能力），与音效开关解耦；如需可控，可加第 4 个顶栏按钮或跟随 `soundOn`。
 - Logo / AppIcon 由 `Design/generate_icon.swift`（macOS Core Graphics 脚本，无依赖）生成：`icon` 模式输出 1024×1024 完整构图 AppIcon，`mark` 模式输出紧凑方形 Logo（去掉准星 / 晶体 / 密网格，放大两要素以适配 26pt）。重新生成：
   ```bash
   swiftc -O Design/generate_icon.swift -o /tmp/rs-icon-gen

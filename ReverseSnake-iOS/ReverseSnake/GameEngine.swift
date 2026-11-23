@@ -257,6 +257,7 @@ final class GameEngine: ObservableObject {
         burst(d.x, d.y, UIColor(hex: 0x3DFFC0), 18)
         flash = 1
         beep(660, 0.07, .triangle, 0.05)
+        Haptics.shared.collect()
         if score > best {
             best = score
             defaults.set(best, forKey: bestKey)
@@ -294,6 +295,7 @@ final class GameEngine: ObservableObject {
         }
         guard phase == .running else { return }
         beep(300, 0.09, .sawtooth, 0.035)
+        Haptics.shared.dash()
         updateHUD()
     }
 
@@ -333,6 +335,7 @@ final class GameEngine: ObservableObject {
                 snakePlan = nil
                 stuckMs = 0
                 beep(230, 0.12, .triangle, 0.03)
+                Haptics.shared.tailCut()
             }
             return
         }
@@ -409,18 +412,21 @@ final class GameEngine: ObservableObject {
         countdown = 3000
         updateHUD()
         beep(520, 0.08, .sine, 0.04)
+        Haptics.shared.tap()
     }
 
     func pause() {
         guard phase == .running || phase == .countdown else { return }
         phase = .paused
         updateHUD()
+        Haptics.shared.tap()
     }
 
     func resume() {
         guard phase == .paused else { return }
         phase = .running
         updateHUD()
+        Haptics.shared.tap()
     }
 
     func pauseForBackground() {
@@ -434,6 +440,7 @@ final class GameEngine: ObservableObject {
         updateHUD()
         burst(player.x, player.y, UIColor(hex: 0xFF5C6E), 26)
         beep(150, 0.35, .sawtooth, 0.06)
+        Haptics.shared.gameOver()
         shakeToken += 1
     }
 
@@ -466,12 +473,16 @@ final class GameEngine: ObservableObject {
         renderTime += dt
 
         if phase == .countdown {
+            let before = Int(ceil(countdown / 1000))
             countdown -= dt
+            let after = Int(ceil(countdown / 1000))
+            if after != before && after > 0 { Haptics.shared.countdownTick() }
             if countdown <= 0 {
                 phase = .running
                 playerAcc = 0
                 snakeAcc = 0
                 updateHUD()
+                Haptics.shared.go()
             }
         }
         if phase == .running {

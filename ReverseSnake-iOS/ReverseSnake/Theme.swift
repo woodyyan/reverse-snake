@@ -57,6 +57,10 @@ enum Theme {
 
     static let stage = Color(hex: 0x070C17)
     static let stageBorder = Color(hex: 0x1B2A44)
+
+    // Dialog panels: readable text on the dark energy card.
+    static let panelText = Color(hex: 0xA8BCD8)
+    static let panelChip = Color(hex: 0x13243E)
 }
 
 // MARK: - Responsive layout metrics
@@ -109,9 +113,10 @@ struct LayoutMetrics {
 
     var brandSize: CGFloat { isShortLandscape ? 14 : (compact ? 16 : 22) }
     var logoSize: CGFloat { isShortLandscape ? 20 : (compact ? 26 : 34) }
-    var buttonFont: CGFloat { isShortLandscape ? 10 : (compact ? 11 : 13) }
-    var buttonPadV: CGFloat { isShortLandscape ? 4 : (compact ? 6 : 8) }
-    var buttonPadH: CGFloat { isShortLandscape ? 8 : (compact ? 9 : 13) }
+    // Top-bar icon controls: dark energy panels, same language as the HUD.
+    var controlSize: CGFloat { isShortLandscape ? 24 : (compact ? 30 : 36) }
+    var controlIcon: CGFloat { controlSize * 0.46 }
+    var controlRadius: CGFloat { controlSize * 0.30 }
 
     // No bottom controls anymore: keep the chrome minimal so the board can
     // use all remaining vertical space.
