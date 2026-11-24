@@ -46,7 +46,10 @@ struct BoardStage: View {
                         .clipShape(RoundedRectangle(cornerRadius: m.stageRadius))
                 }
             }
-            .frame(width: w + 2 * pad, height: h + 2 * pad)
+            // Match the HUD / header width exactly. The grid keeps its square
+            // cells and stays centred; only the deep-space stage expands into
+            // the light gutters, so no board space or HUD space is lost.
+            .frame(width: inner.size.width, height: h + 2 * pad)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             .onAppear {
                 engine.applyGrid(cols: dims.cols, rows: dims.rows, mode: m.gridMode)
