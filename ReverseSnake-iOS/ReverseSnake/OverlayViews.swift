@@ -15,13 +15,13 @@ private struct BackdropBlur: UIViewRepresentable {
 // MARK: - Shared energy UI, same language as the HUD and top-bar controls
 
 struct PrimaryButton: View {
-    let title: String
+    let titleKey: String
     let fontSize: CGFloat
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            Text(title)
+            L10n.t(titleKey)
                 .font(.system(size: fontSize, weight: .heavy))
                 .tracking(0.6)
                 .foregroundColor(.white)
@@ -44,7 +44,7 @@ struct PrimaryButton: View {
 
 /// Monospaced status strip + status lamp, mirroring the HUD state label.
 private struct PanelBadge: View {
-    let code: String
+    let codeKey: String
     let color: Color
 
     var body: some View {
@@ -53,7 +53,7 @@ private struct PanelBadge: View {
                 .fill(color)
                 .frame(width: 6, height: 6)
                 .shadow(color: color.opacity(0.85), radius: 6)
-            Text(code)
+            L10n.t(codeKey)
                 .font(.system(size: 9, weight: .heavy, design: .monospaced))
                 .tracking(1.6)
                 .foregroundColor(color)
@@ -69,8 +69,8 @@ private struct PanelBadge: View {
 /// Highlighted control hint: glowing icon + Chinese action + monospaced detail.
 private struct OperationChip: View {
     let icon: String
-    let title: String
-    let detail: String
+    let titleKey: String
+    let detailKey: String
     let compact: Bool
 
     var body: some View {
@@ -81,12 +81,12 @@ private struct OperationChip: View {
                 .shadow(color: Theme.cyan.opacity(0.65), radius: 7)
                 .frame(width: compact ? 22 : 26)
             VStack(alignment: .leading, spacing: 1) {
-                Text(title)
+                L10n.t(titleKey)
                     .font(.system(size: compact ? 12 : 13, weight: .heavy))
                     .foregroundColor(Theme.hudValue)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
-                Text(detail)
+                L10n.t(detailKey)
                     .font(.system(size: compact ? 8.5 : 9.5, weight: .medium, design: .monospaced))
                     .tracking(0.6)
                     .foregroundColor(Theme.hudLabel)
@@ -207,26 +207,28 @@ struct GameOverlayView: View {
 
     private var operationHints: some View {
         HStack(spacing: m.compact ? 8 : 12) {
-            OperationChip(icon: "hand.draw.fill", title: "滑动转向",
-                          detail: "SWIPE / TURN", compact: m.compact)
-            OperationChip(icon: "bolt.fill", title: "点按冲刺",
-                          detail: "TAP / DASH · 2.6s", compact: m.compact)
+            OperationChip(icon: "hand.draw.fill",
+                          titleKey: L10n.K.hintSwipeTitle,
+                          detailKey: L10n.K.hintSwipeDetail, compact: m.compact)
+            OperationChip(icon: "bolt.fill",
+                          titleKey: L10n.K.hintDashTitle,
+                          detailKey: L10n.K.hintDashDetail, compact: m.compact)
         }
     }
 
     private var readyPanel: some View {
         VStack(spacing: 0) {
-            PanelBadge(code: "MISSION // BRIEFING", color: Theme.cyan)
+            PanelBadge(codeKey: L10n.K.badgeReady, color: Theme.cyan)
                 .padding(.bottom, m.isShortLandscape ? 10 : 16)
 
-            Text("你是被追的那一个")
+            L10n.t(L10n.K.readyTitle)
                 .font(.system(size: titleFont, weight: .heavy))
                 .tracking(-0.6)
                 .foregroundColor(.white)
                 .shadow(color: Theme.cyan.opacity(0.45), radius: 12)
                 .padding(.bottom, 8)
 
-            Text("控制橙点躲避追击，吃青绿晶体得分。\n每得 1 分，蛇变长 2 节、追得更快。\n撞到蛇身即结束；墙只挡路。")
+            L10n.t(L10n.K.readyBody)
                 .font(.system(size: bodyFont))
                 .foregroundColor(Theme.panelText)
                 .lineSpacing(4)
@@ -235,7 +237,7 @@ struct GameOverlayView: View {
             operationHints
                 .padding(.top, m.isShortLandscape ? 12 : 18)
 
-            PrimaryButton(title: "开始游戏", fontSize: m.compact ? 14 : 15) {
+            PrimaryButton(titleKey: L10n.K.start, fontSize: m.compact ? 14 : 15) {
                 engine.start()
             }
             .padding(.top, m.isShortLandscape ? 14 : 20)
@@ -247,20 +249,20 @@ struct GameOverlayView: View {
 
     private var pausePanel: some View {
         VStack(spacing: 0) {
-            PanelBadge(code: "SYSTEM // PAUSED", color: Theme.orange)
+            PanelBadge(codeKey: L10n.K.badgePaused, color: Theme.orange)
                 .padding(.bottom, m.isShortLandscape ? 10 : 16)
 
-            Text("已暂停")
+            L10n.t(L10n.K.pausedTitle)
                 .font(.system(size: titleFont, weight: .heavy))
                 .foregroundColor(.white)
                 .shadow(color: Theme.orange.opacity(0.40), radius: 12)
                 .padding(.bottom, 8)
 
-            Text("蛇在原地等你。")
+            L10n.t(L10n.K.pausedBody)
                 .font(.system(size: bodyFont))
                 .foregroundColor(Theme.panelText)
 
-            PrimaryButton(title: "继续", fontSize: m.compact ? 14 : 15) {
+            PrimaryButton(titleKey: L10n.K.resume, fontSize: m.compact ? 14 : 15) {
                 engine.resume()
             }
             .padding(.top, m.isShortLandscape ? 14 : 20)
@@ -272,21 +274,21 @@ struct GameOverlayView: View {
 
     private var overPanel: some View {
         VStack(spacing: 0) {
-            PanelBadge(code: "RUN // TERMINATED", color: Theme.danger)
+            PanelBadge(codeKey: L10n.K.badgeOver, color: Theme.danger)
                 .padding(.bottom, m.isShortLandscape ? 8 : 14)
 
-            Text("本局结束")
+            L10n.t(L10n.K.overTitle)
                 .font(.system(size: titleFont, weight: .heavy))
                 .foregroundColor(.white)
                 .shadow(color: Theme.danger.opacity(0.40), radius: 12)
 
-            Text(engine.overReason)
+            L10n.t(engine.overReasonKey)
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundColor(Theme.danger)
                 .padding(.top, 6)
 
             VStack(spacing: 0) {
-                Text("SCORE")
+                L10n.t(L10n.K.score)
                     .font(.system(size: 9, weight: .heavy, design: .monospaced))
                     .tracking(1.8)
                     .foregroundColor(Theme.cyan.opacity(0.85))
@@ -298,12 +300,14 @@ struct GameOverlayView: View {
             .padding(.top, m.compact ? 6 : 10)
 
             HStack(spacing: 0) {
-                kpiCell("LENGTH", "蛇长", "\(engine.snake.count)")
-                kpiCell("BEST", "最高", "\(engine.best)")
+                kpiCell(labelKey: L10n.K.hudLength, subKey: L10n.K.hudSubLength,
+                        value: "\(engine.snake.count)", showDivider: true)
+                kpiCell(labelKey: L10n.K.hudBest, subKey: L10n.K.hudSubBest,
+                        value: "\(engine.best)", showDivider: false)
             }
             .padding(.top, m.isShortLandscape ? 8 : 14)
 
-            PrimaryButton(title: "再来一局", fontSize: m.compact ? 14 : 15) {
+            PrimaryButton(titleKey: L10n.K.replay, fontSize: m.compact ? 14 : 15) {
                 engine.start()
             }
             .padding(.top, m.isShortLandscape ? 14 : 20)
@@ -313,22 +317,23 @@ struct GameOverlayView: View {
         .background(cardBackground)
     }
 
-    private func kpiCell(_ code: String, _ zh: String, _ value: String) -> some View {
+    private func kpiCell(labelKey: String, subKey: String, value: String,
+                         showDivider: Bool) -> some View {
         VStack(spacing: 3) {
-            Text(code)
+            L10n.t(labelKey)
                 .font(.system(size: 8, weight: .heavy, design: .monospaced))
                 .tracking(1)
                 .foregroundColor(Theme.cyan)
             Text(value)
                 .font(.system(size: m.compact ? 16 : 20, weight: .heavy, design: .monospaced))
                 .foregroundColor(Theme.hudValue)
-            Text(zh)
+            L10n.t(subKey)
                 .font(.system(size: 9, weight: .medium))
                 .foregroundColor(Theme.hudLabel)
         }
         .frame(maxWidth: .infinity)
         .overlay(alignment: .trailing) {
-            if code != "BEST" { Theme.cyan.opacity(0.12).frame(width: 1) }
+            if showDivider { Theme.cyan.opacity(0.12).frame(width: 1) }
         }
     }
 }

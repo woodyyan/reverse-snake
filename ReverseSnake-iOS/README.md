@@ -1,9 +1,12 @@
-# Reverse Snake · iOS 版（Swift）
+# Snake Feast · iOS 版（Swift）
 
-网页版 `../index.html`（v1.6 反向贪吃蛇）的原生 iOS 移植。完整保留玩法、流程、视觉、音效与存档规则，纯 Swift + SwiftUI + Core Graphics 实现，**无第三方依赖、无 Storyboard**，自带 `Assets.xcassets`（AppIcon + 左上角 Logo），可直接打开工程编译运行。
+网页版 `../index.html`（v1.6）的原生 iOS 移植，iOS 版游戏名为 **Snake Feast**。完整保留玩法、流程、视觉、音效与存档规则，纯 Swift + SwiftUI + Core Graphics 实现，**无第三方依赖、无 Storyboard**，自带 `Assets.xcassets`（AppIcon + 左上角 Logo），可直接打开工程编译运行。
+
+> 命名说明：只改了用户可见的游戏名（主屏 App 显示名 `CFBundleDisplayName`、顶栏品牌文字、本文档标题）。工程目录、Xcode 工程 / scheme / target / product 名、Bundle ID、`UserDefaults` key 等内部标识一律保留，避免破坏构建、仓库一致性和已保存的最高分。
 
 - 目标设备：iPhone + iPad（`TARGETED_DEVICE_FAMILY = 1,2`）
 - 最低系统：iOS 16.0
+- 多语言：简体中文 / 繁体中文 / 英文（美国），跟随系统自动切换
 - 方向：iPhone 竖屏 / 横屏，iPad 四方向；支持旋转、分屏（Split View）与安全区
 - Bundle ID：`com.woodystudio.reversesnake`，版本号 1.6（与网页版一致）
 
@@ -46,7 +49,12 @@ ReverseSnake-iOS/
 │   └── generate_icon.swift          # macOS Core Graphics 脚本：生成 AppIcon / Logo PNG
 └── ReverseSnake/
     ├── Assets.xcassets/             # AppIcon.appiconset + Logo.imageset
-    ├── ReverseSnakeApp.swift        # @main App 入口（含音频预热）
+    ├── en.lproj/Localizable.strings        # 英文（开发语言 / 其他英语地区兜底）
+    ├── en-US.lproj/Localizable.strings     # 英文（美国）
+    ├── zh-Hans.lproj/Localizable.strings   # 简体中文
+    ├── zh-Hant.lproj/Localizable.strings   # 繁体中文
+    ├── Localization.swift           # L10n 键定义 / 查表 / 语言切换中心
+    ├── ReverseSnakeApp.swift        # @main App 入口（含音频预热 + locale 注入）
     ├── Theme.swift                  # 调色板 + LayoutMetrics + 动态网格计算
     ├── GameEngine.swift             # 状态机 / 蛇 AI / BFS / flood fill / 计分 / 粒子 / 存档
     ├── SoundEngine.swift            # AVAudioEngine 波形合成（WebAudio 等价）
@@ -74,11 +82,31 @@ ReverseSnake-iOS/
 
 开始前提示面板保留三行规则与两个高亮操作芯片（滑动转向 / 点按冲刺），游戏中不占任何屏幕空间。暂停、重开、音效都走顶部按钮。App 退到后台自动暂停。
 
-**顶栏控制**：3 个按钮统一为深色能量面板（HUD 同款 `hudTop → hudBottom` 渐变 + `hudBorder` 描边 + 青色发光图标），取代原白色文字按钮。图标为 `pause.fill` / `play.fill`（暂停 / 继续，暂停态橙色呼应 HUD 状态灯）、`speaker.wave.2.fill` / `speaker.slash.fill`（音效开 / 关，关闭时灰蓝）、`arrow.counterclockwise`（重开）；按压有缩放 + 高亮反馈，中文语义保留在 `accessibilityLabel`。与左上角 Logo、下方深色 HUD 构成同一控制语言。
+**顶栏控制**：3 个按钮统一为深色能量面板（HUD 同款 `hudTop → hudBottom` 渐变 + `hudBorder` 描边 + 青色发光图标），取代原白色文字按钮。图标为 `pause.fill` / `play.fill`（暂停 / 继续，暂停态橙色呼应 HUD 状态灯）、`speaker.wave.2.fill` / `speaker.slash.fill`（音效开 / 关，关闭时灰蓝）、`arrow.counterclockwise`（重开）；按压有缩放 + 高亮反馈，本地化语义保留在 `accessibilityLabel`。与左上角 Logo、下方深色 HUD 构成同一控制语言。
 
 > 虚拟方向键、外接键盘支持、底部手势提示 / 玩法说明、角落版本号、`P` / `R` / `Return` 等键盘文案均已移除，只保留滑动玩法。
 
-**弹框统一设计**：开局 / 暂停 / 结算三面板共用深色能量卡片（HUD 渐变、`hudBorder` 描边、顶部扫描线、四角准星、等宽状态铭牌 + 状态灯），取代原白色表单卡片。主按钮为青→蓝能量渐变 + 按压反馈；开局页用两个 `OperationChip` 高亮操作方式（图标 + 中文动作 + 等宽说明），取代原来不起眼的一行灰字；结算页用 `SCORE` 铭牌 + 发光大分数 + LENGTH / BEST 单元格替代长句。文字量未增加，操作信息更醒目。
+**弹框统一设计**：开局 / 暂停 / 结算三面板共用深色能量卡片（HUD 渐变、`hudBorder` 描边、顶部扫描线、四角准星、等宽状态铭牌 + 状态灯），取代原白色表单卡片。主按钮为青→蓝能量渐变 + 按压反馈；开局页用两个 `OperationChip` 高亮操作方式（图标 + 本地化动作 + 等宽说明），取代原来不起眼的一行灰字；结算页用分数铭牌 + 发光大分数 + 长度 / 最高分单元格替代长句。文字量未增加，操作信息更醒目。
+
+## 多语言（跟随系统）
+
+支持 **简体中文 / 繁体中文 / 英文（美国）**，无应用内语言开关：App 语言完全跟随系统首选语言（含 iOS「设置 → App → 首选语言」的按应用设置）。
+
+| 系统语言 | 命中目录 |
+|---|---|
+| `zh-Hans*` | `zh-Hans.lproj` |
+| `zh-Hant*` / `zh-HK` / `zh-TW` | `zh-Hant.lproj` |
+| `en-US` | `en-US.lproj` |
+| `en-GB` / `en-AU` / 其它 | `en.lproj`（英文兜底） |
+| 其它未支持语言 | 回退开发语言 `en` |
+
+- 文案全部收进 `*.lproj/Localizable.strings`，共 42 个 key，与 `Localization.swift` 的 `L10n.K` 常量一一对应；`en` 与 `en-US` 内容一致。
+- SwiftUI 侧统一用 `L10n.t(key)`（`LocalizedStringKey`）；Core Graphics 绘制的 `GRID` 铭牌、`GO`、倒计时提示用 `L10n.s(key)`（按 `Locale.preferredLanguages` 逐级匹配 `xxx-YY → xxx`，带表缓存）。
+- `LocalizationCenter` 监听 `NSLocale.currentLocaleDidChangeNotification`，通过 `.environment(\.locale, ...)` 注入新 Locale，语言变化后无需重建视图树、也不会重置对局状态；系统若选择重启 App 则照常重启。
+- `GameEngine` 只存 key（`stateKey` / `overReasonKey`），由视图在渲染时解析，避免语言切换后残留旧文案。
+- **不翻译**：品牌名 `SNAKE FEAST`、主屏 App 名 `Snake Feast`、数字 / 百分比 / 倒计时数字、Bundle ID 与工程内部标识。
+
+新增文案流程：在 4 份 `.strings` 里加同名的 `"key" = "value";` → 在 `L10n.K` 加常量 → 视图用 `L10n.t(...)` / `L10n.s(...)`。`project.pbxproj` 用 `PBXVariantGroup` 管理这 4 份文件，新增语言需同步加 child 与 `knownRegions`。
 
 ## 功能对照（网页版 → iOS 等效实现）
 
@@ -132,6 +160,8 @@ ReverseSnake-iOS/
 - 修复 Xcode AVAudioSession Hang Risk 诊断：音频会话初始化移出主线程（iOS 27+ 异步 activate，旧系统串行队列），冷启动日志确认 `AVAudioEngine` 正常 `start`、无主线程卡顿诊断。
 - 修复项：Core Graphics 径向渐变默认不绘制起始半径内区域，导致棋盘中心出现黑洞；已改用 `.drawsBeforeStartLocation` + `.drawsAfterEndLocation`，与 Canvas 2D 行为一致。
 - 工程曾被 Xcode 自动升级写入 `IPHONEOS_DEPLOYMENT_TARGET = 27.0`（导致装不进 iOS 18.6 模拟器），已恢复为 16.0；Bundle ID 保持 `com.woodystudio.reversesnake`。
+- 改名 Snake Feast：`xcodebuild build` → **BUILD SUCCEEDED**，产物 `Info.plist` 的 `CFBundleDisplayName = "Snake Feast"`，`CFBundleIdentifier` / `MinimumOSVersion` 未变；iPhone 16 Pro 与 iPad Pro 11 英寸截图验证顶栏显示 `SNAKE FEAST`（双色）无截断、无重叠，主屏图标名显示 `Snake Feast`，界面内无旧名残留。
+- 多语言：`plutil -lint` 校验 `project.pbxproj` 与 4 份 `.strings` 均 OK；静态校验 4 份文案各 42 个 key，与 `L10n.K` 常量零差异；产物含 `en / en-US / zh-Hans / zh-Hant` 四个 `.lproj`。用 `-AppleLanguages` 分别启动，iPhone 16 Pro 上验证简体 / 繁体 / 英文（美国）的开局、暂停、结算面板与倒计时 CG 文案，iPad Pro 11 英寸验证英文 / 简体 HUD 主副标签；三种语言均无残留、无截断重叠。英文开局文案经缩短后保持 3 行，不撑高面板。
 
 ## 备注
 
@@ -142,4 +172,5 @@ ReverseSnake-iOS/
   /tmp/rs-icon-gen <output.png> icon   # 或 mark
   ```
 - `Assets.xcassets` 已加入 Resources Build Phase，`ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon`；LaunchScreen 由 `UILaunchScreen_Generation` 自动生成。
+- `GENERATE_INFOPLIST_FILE = YES` 时 `CFBundleName` 由 `PRODUCT_NAME` 固定生成（`ReverseSnake`），`INFOPLIST_KEY_CFBundleName` build setting 不生效；用户可见名称由 `CFBundleDisplayName` 决定，改游戏名只需改这一项 + 顶栏文案。
 - 真机部署需在 Target → Signing & Capabilities 里选择自己的 Development Team（工程已开启 Automatic 签名）。

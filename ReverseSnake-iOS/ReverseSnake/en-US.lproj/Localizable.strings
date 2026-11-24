@@ -1,0 +1,53 @@
+/* Snake Feast — English (United States). Content matches en.lproj. */
+
+/* Top bar — VoiceOver labels */
+"control.pause" = "Pause";
+"control.resume" = "Resume";
+"control.sound.on" = "Sound on";
+"control.sound.off" = "Sound off";
+"control.restart" = "Restart";
+
+/* HUD — primary labels + short secondary descriptors */
+"hud.score" = "SCORE";
+"hud.best" = "BEST";
+"hud.length" = "LENGTH";
+"hud.space" = "SPACE";
+"hud.threat" = "THREAT";
+"hud.sub.score" = "PTS";
+"hud.sub.best" = "REC";
+"hud.sub.length" = "SEG";
+"hud.sub.space" = "ROOM";
+"hud.sub.threat" = "LVL";
+
+/* HUD — state lamp */
+"hud.state.ready" = "STANDBY";
+"hud.state.countdown" = "GET READY";
+"hud.state.running" = "LIVE";
+"hud.state.paused" = "PAUSED";
+"hud.state.over" = "GAME OVER";
+"hud.dash.ready" = "READY";
+
+/* Core Graphics board overlay */
+"board.grid" = "GRID %1$dx%2$d  //  SECTOR 07";
+"board.go" = "GO";
+"board.countdown.hint" = "Swipe now to pick an escape direction";
+
+/* Panels */
+"panel.badge.ready" = "MISSION // BRIEFING";
+"panel.badge.paused" = "SYSTEM // PAUSED";
+"panel.badge.over" = "RUN // TERMINATED";
+"panel.ready.title" = "You're the one being hunted";
+"panel.ready.body" = "Dodge the snake. Collect cyan crystals.\nEach crystal: +2 segments, faster snake.\nTouch the snake: game over. Walls only block.";
+"panel.hint.swipe.title" = "Swipe to turn";
+"panel.hint.swipe.detail" = "SWIPE / TURN";
+"panel.hint.dash.title" = "Tap to dash";
+"panel.hint.dash.detail" = "TAP / DASH · 2.6s";
+"panel.start" = "Start Game";
+"panel.paused.title" = "Paused";
+"panel.paused.body" = "The snake is waiting right there.";
+"panel.resume" = "Resume";
+"panel.over.title" = "Run Over";
+"panel.score" = "SCORE";
+"panel.replay" = "Play Again";
+"panel.over.hit" = "You ran into the snake";
+"panel.over.caught" = "The snake caught you";

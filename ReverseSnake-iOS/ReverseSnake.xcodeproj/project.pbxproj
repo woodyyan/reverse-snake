@@ -18,6 +18,8 @@
 		A1B2C3D40000000000000028 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40000000000000018 /* ContentView.swift */; };
 		A1B2C3D40000000000000029 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40000000000000019 /* Assets.xcassets */; };
 		A1B2C3D4000000000000002A /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4000000000000001A /* Haptics.swift */; };
+		B1C2D3E40000000000000001 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B1C2D3E40000000000000003 /* Localizable.strings */; };
+		B1C2D3E40000000000000002 /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E40000000000000008 /* Localization.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -33,6 +35,11 @@
 		A1B2C3D40000000000000018 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A1B2C3D40000000000000019 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A1B2C3D4000000000000001A /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
+		B1C2D3E40000000000000004 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B1C2D3E40000000000000005 /* en-US */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "en-US"; path = "en-US.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		B1C2D3E40000000000000006 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		B1C2D3E40000000000000007 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		B1C2D3E40000000000000008 /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,11 +73,13 @@
 			isa = PBXGroup;
 			children = (
 				A1B2C3D40000000000000019 /* Assets.xcassets */,
+				B1C2D3E40000000000000003 /* Localizable.strings */,
 				A1B2C3D40000000000000010 /* ReverseSnakeApp.swift */,
 				A1B2C3D40000000000000011 /* Theme.swift */,
 				A1B2C3D40000000000000012 /* GameEngine.swift */,
 				A1B2C3D40000000000000013 /* SoundEngine.swift */,
 				A1B2C3D4000000000000001A /* Haptics.swift */,
+				B1C2D3E40000000000000008 /* Localization.swift */,
 				A1B2C3D40000000000000014 /* GameBoardView.swift */,
 				A1B2C3D40000000000000015 /* HUDView.swift */,
 				A1B2C3D40000000000000016 /* OverlayViews.swift */,
@@ -121,8 +130,10 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				"en-US",
 				Base,
 				"zh-Hans",
+				"zh-Hant",
 			);
 			mainGroup = A1B2C3D40000000000000003;
 			productRefGroup = A1B2C3D40000000000000004 /* Products */;
@@ -140,6 +151,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1B2C3D40000000000000029 /* Assets.xcassets in Resources */,
+				B1C2D3E40000000000000001 /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -160,10 +172,25 @@
 				A1B2C3D40000000000000027 /* ControlsView.swift in Sources */,
 				A1B2C3D40000000000000028 /* ContentView.swift in Sources */,
 				A1B2C3D4000000000000002A /* Haptics.swift in Sources */,
+				B1C2D3E40000000000000002 /* Localization.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		B1C2D3E40000000000000003 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B1C2D3E40000000000000004 /* en */,
+				B1C2D3E40000000000000005 /* en-US */,
+				B1C2D3E40000000000000006 /* zh-Hans */,
+				B1C2D3E40000000000000007 /* zh-Hant */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		A1B2C3D4000000000000000B /* Debug */ = {
@@ -280,7 +307,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Reverse Snake";
+				INFOPLIST_KEY_CFBundleDisplayName = "Snake Feast";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -311,7 +338,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Reverse Snake";
+				INFOPLIST_KEY_CFBundleDisplayName = "Snake Feast";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

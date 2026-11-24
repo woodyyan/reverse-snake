@@ -1,0 +1,53 @@
+/* Snake Feast — 简体中文 */
+
+/* 顶栏 — VoiceOver 标签 */
+"control.pause" = "暂停";
+"control.resume" = "继续";
+"control.sound.on" = "音效开";
+"control.sound.off" = "音效关";
+"control.restart" = "重开";
+
+/* HUD — 主标签 + 次级短说明 */
+"hud.score" = "得分";
+"hud.best" = "最高";
+"hud.length" = "蛇长";
+"hud.space" = "空间";
+"hud.threat" = "追击";
+"hud.sub.score" = "分数";
+"hud.sub.best" = "纪录";
+"hud.sub.length" = "节数";
+"hud.sub.space" = "余量";
+"hud.sub.threat" = "速度";
+
+/* HUD — 状态灯 */
+"hud.state.ready" = "待机";
+"hud.state.countdown" = "准备";
+"hud.state.running" = "进行中";
+"hud.state.paused" = "已暂停";
+"hud.state.over" = "已结束";
+"hud.dash.ready" = "就绪";
+
+/* Core Graphics 棋盘浮层 */
+"board.grid" = "网格 %1$dx%2$d  //  区域 07";
+"board.go" = "开始";
+"board.countdown.hint" = "先滑动选好逃跑方向";
+
+/* 弹框 */
+"panel.badge.ready" = "任务 // 简报";
+"panel.badge.paused" = "系统 // 暂停";
+"panel.badge.over" = "本局 // 终止";
+"panel.ready.title" = "你是被追的那一个";
+"panel.ready.body" = "控制橙点躲避追击，吃青绿晶体得分。\n每得 1 分，蛇变长 2 节、追得更快。\n撞到蛇身即结束；墙只挡路。";
+"panel.hint.swipe.title" = "滑动转向";
+"panel.hint.swipe.detail" = "滑动 / 转向";
+"panel.hint.dash.title" = "点按冲刺";
+"panel.hint.dash.detail" = "点按 / 冲刺 · 2.6s";
+"panel.start" = "开始游戏";
+"panel.paused.title" = "已暂停";
+"panel.paused.body" = "蛇在原地等你。";
+"panel.resume" = "继续";
+"panel.over.title" = "本局结束";
+"panel.score" = "分数";
+"panel.replay" = "再来一局";
+"panel.over.hit" = "一头撞上了蛇身";
+"panel.over.caught" = "被蛇追上了";

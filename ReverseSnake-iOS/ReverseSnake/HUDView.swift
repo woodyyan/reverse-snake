@@ -53,18 +53,22 @@ struct HUDView: View {
             // Five KPI cells
             GeometryReader { g in
                 HStack(alignment: .top, spacing: 0) {
-                    kpi(code: "SCORE", zh: "得分", value: "\(hud.score)",
-                        width: g.size.width * weights[0] / total,
-                        isScore: true, showState: true, score: true)
-                    kpi(code: "BEST", zh: "最高", value: "\(hud.best)",
-                        width: g.size.width * weights[1] / total)
-                    kpi(code: "LENGTH", zh: "蛇长", value: "\(hud.length)",
-                        width: g.size.width * weights[2] / total)
-                    kpi(code: "SPACE", zh: "空间", value: "\(hud.space)%",
-                        width: g.size.width * weights[3] / total,
-                        valueColor: hud.space < 30 ? Theme.danger : Theme.hudValue)
-                    kpi(code: "THREAT", zh: "追击", value: "\(hud.threat)%",
-                        width: g.size.width * weights[4] / total)
+                    kpi(labelKey: L10n.K.hudScore, subKey: L10n.K.hudSubScore,
+                        value: "\(hud.score)", width: g.size.width * weights[0] / total,
+                        isScore: true, showState: true, score: true, showDivider: true)
+                    kpi(labelKey: L10n.K.hudBest, subKey: L10n.K.hudSubBest,
+                        value: "\(hud.best)", width: g.size.width * weights[1] / total,
+                        showDivider: true)
+                    kpi(labelKey: L10n.K.hudLength, subKey: L10n.K.hudSubLength,
+                        value: "\(hud.length)", width: g.size.width * weights[2] / total,
+                        showDivider: true)
+                    kpi(labelKey: L10n.K.hudSpace, subKey: L10n.K.hudSubSpace,
+                        value: "\(hud.space)%", width: g.size.width * weights[3] / total,
+                        valueColor: hud.space < 30 ? Theme.danger : Theme.hudValue,
+                        showDivider: true)
+                    kpi(labelKey: L10n.K.hudThreat, subKey: L10n.K.hudSubThreat,
+                        value: "\(hud.threat)%", width: g.size.width * weights[4] / total,
+                        showDivider: false)
                 }
             }
 
@@ -113,27 +117,28 @@ struct HUDView: View {
     @State private var lastScore = 0
 
     @ViewBuilder
-    private func kpi(code: String, zh: String, value: String, width: CGFloat,
+    private func kpi(labelKey: String, subKey: String, value: String, width: CGFloat,
                      isScore: Bool = false, showState: Bool = false,
-                     score: Bool = false, valueColor: Color = Theme.hudValue) -> some View {
+                     score: Bool = false, valueColor: Color = Theme.hudValue,
+                     showDivider: Bool = false) -> some View {
         let labSize = m.kpiLabel
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: m.compact ? 3 : 6) {
-                Text(code)
+                L10n.t(labelKey)
                     .font(.system(size: labSize, weight: .heavy, design: .monospaced))
                     .tracking(m.compact ? 0.4 : 1.2)
                     .foregroundColor(Theme.cyan)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
                 if !m.compact {
-                    Text(zh)
+                    L10n.t(subKey)
                         .font(.system(size: 9, weight: .semibold))
                         .foregroundColor(Color(hex: 0x8CA3C2))
                 }
                 if showState {
                     Spacer(minLength: 0)
                     if !(m.compact && !m.isShortLandscape) {
-                        Text(engine.hud.stateText)
+                        L10n.t(engine.hud.stateKey)
                             .font(.system(size: 8, weight: .heavy, design: .monospaced))
                             .tracking(1.2)
                             .foregroundColor(stateColor)
@@ -166,7 +171,7 @@ struct HUDView: View {
         .padding(.trailing, 2)
         .frame(width: width, alignment: .leading)
         .overlay(alignment: .trailing) {
-            if code != "THREAT" {
+            if showDivider {
                 Theme.cyan.opacity(0.10).frame(width: 1)
             }
         }

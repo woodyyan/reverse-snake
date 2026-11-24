@@ -37,9 +37,9 @@ struct HUDData {
     var length = 5
     var space = 100
     var threat = 0
-    var dashText = "就绪"
+    var dashText = L10n.s(L10n.K.dashReady)
     var dashReady = true
-    var stateText = "STANDBY"
+    var stateKey = L10n.K.stateReady
 }
 
 private func clamp(_ v: Int, _ a: Int, _ b: Int) -> Int { max(a, min(b, v)) }
@@ -78,7 +78,7 @@ final class GameEngine: ObservableObject {
     // ---------- published (SwiftUI shell) ----------
     @Published private(set) var hud = HUDData()
     @Published private(set) var phase: Phase = .ready
-    @Published private(set) var overReason = ""
+    @Published private(set) var overReasonKey = ""
     @Published private(set) var shakeToken = 0
 
     @Published var soundOn: Bool {
@@ -272,7 +272,7 @@ final class GameEngine: ObservableObject {
         if !inBounds(nx, ny) { return false }            // wall: blocks, never kills
         if playerBlocked().contains(GridPoint(x: nx, y: ny)) {
             burst(nx, ny, UIColor(hex: 0xFF5C6E), 14)
-            gameOver("一头撞上了蛇身")
+            gameOver(L10n.K.overHitBody)
             return false
         }
         player = GridPoint(x: nx, y: ny)
@@ -340,7 +340,7 @@ final class GameEngine: ObservableObject {
             return
         }
         stuckMs = 0
-        if n == player { gameOver("被蛇追上了"); return }
+        if n == player { gameOver(L10n.K.overCaught); return }
         snake.insert(n, at: 0)
         if willGrow { pendingGrowth -= 1 } else { snake.removeLast() }
     }
@@ -378,13 +378,14 @@ final class GameEngine: ObservableObject {
     }
 
     // ---------- HUD / flow ----------
-    private var stateLabel: String {
+    /// Localization key, resolved by SwiftUI at render time.
+    private var stateKey: String {
         switch phase {
-        case .ready: return "STANDBY"
-        case .countdown: return "GET READY"
-        case .running: return "LIVE"
-        case .paused: return "PAUSED"
-        case .over: return "GAME OVER"
+        case .ready: return L10n.K.stateReady
+        case .countdown: return L10n.K.stateCountdown
+        case .running: return L10n.K.stateRunning
+        case .paused: return L10n.K.statePaused
+        case .over: return L10n.K.stateOver
         }
     }
 
@@ -400,9 +401,9 @@ final class GameEngine: ObservableObject {
             length: snake.count + pendingGrowth,
             space: pct,
             threat: clamp(lvl, 0, 100),
-            dashText: dashCd > 0 ? String(format: "%.1fs", dashCd / 1000) : "就绪",
+            dashText: dashCd > 0 ? String(format: "%.1fs", dashCd / 1000) : L10n.s(L10n.K.dashReady),
             dashReady: dashCd <= 0,
-            stateText: stateLabel
+            stateKey: stateKey
         )
     }
 
@@ -433,10 +434,10 @@ final class GameEngine: ObservableObject {
         if phase == .running || phase == .countdown { pause() }
     }
 
-    func gameOver(_ reason: String) {
+    func gameOver(_ reasonKey: String) {
         guard phase != .over else { return }
         phase = .over
-        overReason = reason
+        overReasonKey = reasonKey
         updateHUD()
         burst(player.x, player.y, UIColor(hex: 0xFF5C6E), 26)
         beep(150, 0.35, .sawtooth, 0.06)

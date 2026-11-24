@@ -19,7 +19,8 @@ struct HeaderBar: View {
                         .stroke(Theme.line, lineWidth: 1)
                 )
 
-            (Text("REVERSE").foregroundColor(Theme.blue) + Text(" SNAKE").foregroundColor(Theme.ink))
+            // Brand name stays identical in every language (product name).
+            (Text(verbatim: "SNAKE").foregroundColor(Theme.blue) + Text(verbatim: " FEAST").foregroundColor(Theme.ink))
                 .font(.system(size: m.brandSize, weight: .bold))
                 .tracking(-0.4)
                 .lineLimit(1)
@@ -30,7 +31,7 @@ struct HeaderBar: View {
             HStack(spacing: m.compact ? 6 : 8) {
                 EnergyIconButton(
                     systemName: engine.phase == .paused ? "play.fill" : "pause.fill",
-                    label: engine.phase == .paused ? "继续" : "暂停",
+                    labelKey: engine.phase == .paused ? L10n.K.controlResume : L10n.K.controlPause,
                     tint: engine.phase == .paused ? Theme.orange : Theme.cyan,
                     m: m
                 ) {
@@ -39,7 +40,7 @@ struct HeaderBar: View {
 
                 EnergyIconButton(
                     systemName: engine.soundOn ? "speaker.wave.2.fill" : "speaker.slash.fill",
-                    label: engine.soundOn ? "音效开" : "音效关",
+                    labelKey: engine.soundOn ? L10n.K.controlSoundOn : L10n.K.controlSoundOff,
                     tint: engine.soundOn ? Theme.cyan : Theme.hudLabel,
                     m: m
                 ) {
@@ -49,7 +50,7 @@ struct HeaderBar: View {
 
                 EnergyIconButton(
                     systemName: "arrow.counterclockwise",
-                    label: "重开",
+                    labelKey: L10n.K.controlRestart,
                     tint: Theme.cyan,
                     m: m
                 ) {
@@ -66,7 +67,7 @@ struct HeaderBar: View {
 /// so the three buttons read as a single control cluster instead of system buttons.
 private struct EnergyIconButton: View {
     let systemName: String
-    let label: String
+    let labelKey: String
     let tint: Color
     let m: LayoutMetrics
     let action: () -> Void
@@ -92,7 +93,7 @@ private struct EnergyIconButton: View {
             )
         }
         .buttonStyle(EnergyPressStyle())
-        .accessibilityLabel(label)
+        .accessibilityLabel(L10n.t(labelKey))
     }
 }
 

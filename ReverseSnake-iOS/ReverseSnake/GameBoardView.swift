@@ -170,7 +170,7 @@ enum BoardRenderer {
         ctx.strokePath()
 
         let plateFont = UIFont.monospacedSystemFont(ofSize: max(8, round(cell * 0.30)), weight: .semibold)
-        let plate = "GRID \(cols)x\(rows)  //  SECTOR 07"
+        let plate = String(format: L10n.s(L10n.K.boardGrid), cols, rows)
         let plateSize = textSize(plate, plateFont)
         drawText(plate,
                  at: CGPoint(x: W - 12 - plateSize.width, y: 10),
@@ -318,7 +318,7 @@ enum BoardRenderer {
             ctx.setFillColor(UIColor(hex: 0x050A14, alpha: 0.62).cgColor)
             ctx.fill(board)
             let n = Int(ceil(engine.countdown / 1000))
-            let big = n > 0 ? String(n) : "GO"
+            let big = n > 0 ? String(n) : L10n.s(L10n.K.boardGo)
             let bigFont = UIFont.systemFont(ofSize: round(cell * 4), weight: .heavy)
             let bigSize = textSize(big, bigFont)
             ctx.saveGState()
@@ -329,7 +329,7 @@ enum BoardRenderer {
                      font: bigFont, color: UIColor(hex: 0xEAF6FF))
             ctx.restoreGState()
             let subFont = UIFont.systemFont(ofSize: max(9, round(cell * 0.85)), weight: .semibold)
-            let sub = "先滑动选好逃跑方向"
+            let sub = L10n.s(L10n.K.boardCountdownHint)
             let subSize = textSize(sub, subFont)
             drawText(sub,
                      at: CGPoint(x: W / 2 - subSize.width / 2,
