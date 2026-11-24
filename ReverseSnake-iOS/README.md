@@ -154,6 +154,7 @@ ReverseSnake-iOS/
 - iPhone 16 Pro（iOS 18.6，动态网格 16×29）、iPad Pro 11-inch（M4，19×25）均安装、启动、运行无崩溃。
 - 实测截图覆盖：开始页（精简提示）、游戏进行中（棋盘/蛇/玩家/晶体/HUD）、结算页、暂停页；棋盘上下左右留白极小，两种设备均无裁切、无溢出。
 - AppIcon 与 Logo 已验证：主屏幕显示深空网格 / 橙点 / 青色能量蛇 / 青绿晶体图标；iPhone / iPad 顶栏 Logo 与标题、三个按钮无重叠。
+- 图标重设计「S-Chase」（极简版）：`xcodebuild build` 成功；iPhone 16 Pro 卸载重装后主屏显示新图标（深海军蓝底 + S 形能量蛇 + 橙色玩家光球），顶栏 26pt Logo 清晰、与标题无重叠；AppIcon / Logo PNG 均为不透明（`hasAlpha: no`），满足 App Store 要求。
 - 新增 `Haptics.swift` 并接入 9 类事件节点；`xcodebuild build` 成功、模拟器启动无崩溃、无 haptic 运行时错误。模拟器不产生真实触觉，手感需真机体验。
 - 开局 / 暂停 / 结算三面板重做为深色能量卡片，iPhone 三状态截图 + iPad 开局截图验证：铭牌完整、操作芯片醒目、分数与 KPI 清晰、无裁切与重叠。
 - 顶栏 3 个文字按钮改为深色能量图标按钮（SF Symbols），iPhone / iPad 截图验证与 HUD / Logo 视觉统一、无布局重叠；5 个符号名称经系统校验有效。
@@ -166,10 +167,11 @@ ReverseSnake-iOS/
 ## 备注
 
 - 震动无独立开关（跟随系统 Taptic 能力），与音效开关解耦；如需可控，可加第 4 个顶栏按钮或跟随 `soundOn`。
-- Logo / AppIcon 由 `Design/generate_icon.swift`（macOS Core Graphics 脚本，无依赖）生成：`icon` 模式输出 1024×1024 完整构图 AppIcon，`mark` 模式输出紧凑方形 Logo（去掉准星 / 晶体 / 密网格，放大两要素以适配 26pt）。重新生成：
+- Logo / AppIcon 由 `Design/generate_icon.swift`（macOS Core Graphics 脚本，无依赖）生成，设计概念「S-Chase」（极简，只有两个元素）：一条沿游戏直角走位绘制的 S 形能量蛇（S = Snake，尾部左下暗且细 → 蛇头右上亮且粗，青蓝渐变 + 柔光），蛇头前方一颗橙色玩家光球——追逐即全部玩法；深海军蓝渐变底，无网格 / 眼睛 / 晶体 / 准星。`icon` 模式输出 1024×1024 不透明 AppIcon；`mark` 为同一画面放大 1.14 倍，适配 26–34pt 顶栏 Logo。重新生成：
   ```bash
   swiftc -O Design/generate_icon.swift -o /tmp/rs-icon-gen
-  /tmp/rs-icon-gen <output.png> icon   # 或 mark
+  /tmp/rs-icon-gen ReverseSnake/Assets.xcassets/AppIcon.appiconset/Icon-1024.png icon
+  /tmp/rs-icon-gen /tmp/mark.png mark   # 再用 sips -z 128/256/384 导出 Logo.imageset 1x/2x/3x
   ```
 - `Assets.xcassets` 已加入 Resources Build Phase，`ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon`；LaunchScreen 由 `UILaunchScreen_Generation` 自动生成。
 - `GENERATE_INFOPLIST_FILE = YES` 时 `CFBundleName` 由 `PRODUCT_NAME` 固定生成（`ReverseSnake`），`INFOPLIST_KEY_CFBundleName` build setting 不生效；用户可见名称由 `CFBundleDisplayName` 决定，改游戏名只需改这一项 + 顶栏文案。
