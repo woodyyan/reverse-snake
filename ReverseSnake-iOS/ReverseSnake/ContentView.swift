@@ -92,8 +92,31 @@ struct ContentView: View {
             .background(Theme.bg)
             .onChange(of: scenePhase) { phase in
                 if phase != .active { engine.pauseForBackground() }
+                if phase == .active { GameCenterManager.shared.retryPending() }
+            }
+            .onAppear { startGameCenter() }
+            .onChange(of: engine.phase) { phase in
+                let gc = GameCenterManager.shared
+                gc.setAutoLoginAllowed(phase == .ready)
+                switch phase {
+                case .over: gc.reportRound(score: engine.score, best: engine.best)
+                case .countdown: gc.clearRound()
+                default: break
+                }
             }
         }
         .background(Theme.bg.ignoresSafeArea())
+    }
+
+    /// Silent Game Center sign-in; never blocks or interrupts play.
+    private func startGameCenter() {
+        GameCenterManager.shared.start(localBest: engine.best)
+        #if DEBUG
+        if DebugMock.forceOver {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                engine.gameOver(L10n.K.overCaught)
+            }
+        }
+        #endif
     }
 }

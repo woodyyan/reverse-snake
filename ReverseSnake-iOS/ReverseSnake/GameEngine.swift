@@ -97,6 +97,8 @@ final class GameEngine: ObservableObject {
     var dirQueue: [Delta] = []
     var score = 0
     private(set) var best = 0
+    /// True once this round beats the stored best (drives the NEW BEST tag).
+    private(set) var isNewBest = false
     var pendingGrowth = 0
     var dashCd: Double = 0
     var countdown: Double = 3000
@@ -161,6 +163,7 @@ final class GameEngine: ObservableObject {
         dir = Delta(x: 0, y: 0)
         dirQueue = []
         score = 0
+        isNewBest = false
         pendingGrowth = 0
         dashCd = 0
         stuckMs = 0
@@ -260,6 +263,7 @@ final class GameEngine: ObservableObject {
         Haptics.shared.collect()
         if score > best {
             best = score
+            isNewBest = true
             defaults.set(best, forKey: bestKey)
         }
         spawnDot()

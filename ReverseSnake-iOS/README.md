@@ -63,7 +63,10 @@ ReverseSnake-iOS/
     ├── HUDView.swift                # 5 项深色能量仪表 HUD
     ├── OverlayViews.swift           # 深色能量弹框（开局 / 暂停 / 结算）+ 毛玻璃遮罩 + 高亮操作提示
     ├── ControlsView.swift           # 左上角 Logo + 深色能量图标按钮（暂停 / 音效 / 重开）
-    └── ContentView.swift            # 满屏棋盘布局、动态网格、抖动动画、前后台暂停
+    ├── ContentView.swift            # 满屏棋盘布局、动态网格、抖动动画、前后台暂停、Game Center 事件桥接
+    ├── GameCenterManager.swift      # Game Center 登录 / 提交 / 拉榜 / 离线补交 / 系统榜跳转（+ DEBUG mock）
+    ├── LeaderboardView.swift        # 排行榜面板、结算页名次条、次级按钮
+    └── ReverseSnake.entitlements    # com.apple.developer.game-center
 ```
 
 调参入口：`GameEngine.swift` 顶部常量（`playerMS / snakeBase / snakeMin / planSteps / grow / dashCD / dirs`），与网页版 `config` 区一一对应。
@@ -100,13 +103,54 @@ ReverseSnake-iOS/
 | `en-GB` / `en-AU` / 其它 | `en.lproj`（英文兜底） |
 | 其它未支持语言 | 回退开发语言 `en` |
 
-- 文案全部收进 `*.lproj/Localizable.strings`，共 42 个 key，与 `Localization.swift` 的 `L10n.K` 常量一一对应；`en` 与 `en-US` 内容一致。
+- 文案全部收进 `*.lproj/Localizable.strings`，共 69 个 key，与 `Localization.swift` 的 `L10n.K` 常量一一对应；`en` 与 `en-US` 内容一致。
 - SwiftUI 侧统一用 `L10n.t(key)`（`LocalizedStringKey`）；Core Graphics 绘制的 `GRID` 铭牌、`GO`、倒计时提示用 `L10n.s(key)`（按 `Locale.preferredLanguages` 逐级匹配 `xxx-YY → xxx`，带表缓存）。
 - `LocalizationCenter` 监听 `NSLocale.currentLocaleDidChangeNotification`，通过 `.environment(\.locale, ...)` 注入新 Locale，语言变化后无需重建视图树、也不会重置对局状态；系统若选择重启 App 则照常重启。
 - `GameEngine` 只存 key（`stateKey` / `overReasonKey`），由视图在渲染时解析，避免语言切换后残留旧文案。
 - **不翻译**：品牌名 `SNAKE FEAST`、主屏 App 名 `Snake Feast`、数字 / 百分比 / 倒计时数字、Bundle ID 与工程内部标识。
 
 新增文案流程：在 4 份 `.strings` 里加同名的 `"key" = "value";` → 在 `L10n.K` 加常量 → 视图用 `L10n.t(...)` / `L10n.s(...)`。`project.pbxproj` 用 `PBXVariantGroup` 管理这 4 份文件，新增语言需同步加 child 与 `knownRegions`。
+
+## 全球排行榜（Game Center）
+
+纯 Apple 托管：无后端、无账号体系、无名字登记（显示 Game Center 昵称）。Game Center 只是增强项，任何失败都降级为本机最高分，不阻塞、不打断对局。
+
+| 项 | 实现 |
+|---|---|
+| 排行榜 | `snakefeast.best.alltime`（经典榜，永久）+ `snakefeast.best.weekly`（循环榜，每周重置） |
+| 登录 | 启动后静默认证；系统给出登录页时**仅在开局面板**自动弹一次，对局中绝不弹 |
+| 提交 | 每局结束 `score > 0` 时同时提交两个榜；失败存 `gc-pending-score`，回前台 / 下次登录自动补交 |
+| 历史回填 | 登录成功后把 `reverse-snake-best` 提交到总榜（接入 Game Center 前的老纪录不丢） |
+| 结算页 | 分数下方名次条：`全球 #128 ↑34 · 好友 #3` + 新纪录标签；未登录 / 提交中 / 离线各有状态；下方「查看排行榜」 |
+| 开局页 | 主按钮下方「全球排行」次级按钮 |
+| 排行榜面板 | 自绘深色能量卡片；全球 / 好友 / 本周三 Tab；前 50 名（前三金银铜）；底部固定「我」行（橙色）；下拉刷新；60s 缓存 |
+| 系统界面 | 页脚「在 Game Center 中查看」：iOS 18+ 走 `GKAccessPoint.trigger`（iOS 26 打开「游戏」App 浮层），iOS 16–17 回退 `GKGameCenterViewController` |
+| 未登录 | 面板显示登录引导 + 本机最高；本次启动尚可弹登录页时显示「登录 Game Center」按钮 |
+
+**App Store Connect 配置（上线前必做，Xcode 侧已完成）**
+
+1. Certificates, IDs & Profiles：App ID `com.woodystudio.reversesnake` 勾选 Game Center（自动签名一般会自动同步）。
+2. App Store Connect → App → 功能 → Game Center → 新建排行榜：
+
+| 参考名称 | 排行榜 ID | 类型 | 分数格式 | 排序 | 分数范围 |
+|---|---|---|---|---|---|
+| All-Time Best | `snakefeast.best.alltime` | 经典 | 整数 | 从高到低 | 0–999 |
+| Weekly Best | `snakefeast.best.weekly` | 循环（每周，周一 00:00 开始） | 整数 | 从高到低 | 0–999 |
+
+3. 两个榜各加本地化：简体中文「全球最高分 / 本周最高分」、繁体中文「全球最高分 / 本週最高分」、英文「All-Time Best / Weekly Best」，分数格式后缀「分 / points」。
+4. 版本页 → 勾选 Game Center 并关联这两个排行榜（**不勾选会导致带 Game Center 权限的构建无法提交审核**）。
+5. 分类：游戏 › 街机。中国大陆上架需游戏版号。
+6. 排行榜一经上线**不可删除、ID 不可复用**；分数范围 0–999 用于挡掉明显作弊分。
+
+**测试**：真机 / 模拟器在「设置 → Game Center」登录沙盒或真实账号；排行榜在 App Store Connect 创建后几分钟内生效，提交后名次有数秒延迟。
+
+**DEBUG 调试参数**（仅 Debug 构建；模拟器 Game Center 无数据时用于验 UI）：
+
+```bash
+xcrun simctl launch booted com.woodystudio.reversesnake -GCMock ranked -GCShowBoard YES    # 已登录 + 50 条假数据，直接打开排行榜
+xcrun simctl launch booted com.woodystudio.reversesnake -GCMock ranked -GCDebugOver YES    # 直接进入结算页看名次条
+xcrun simctl launch booted com.woodystudio.reversesnake -GCMock signedout -GCShowBoard YES # 未登录态
+```
 
 ## 功能对照（网页版 → iOS 等效实现）
 
@@ -116,7 +160,7 @@ ReverseSnake-iOS/
 | `requestAnimationFrame` | `CADisplayLink` | 同一 90ms dt 上限 |
 | WebAudio `OscillatorNode` | `AVAudioEngine` + `AVAudioPlayerNode` PCM buffer | sine / triangle / sawtooth，指数衰减包络；开始 520、得分 660、冲刺 300、断尾 230、死亡 150Hz |
 | — | `UIFeedbackGenerator`（iOS 原生增强） | 按事件分级震动，详见下方「震动反馈」 |
-| `localStorage` | `UserDefaults` | `reverse-snake-best`（最高分）、`reverse-snake-sound`（音效开关，iOS 额外持久化） |
+| `localStorage` | `UserDefaults` | `reverse-snake-best`（最高分）、`reverse-snake-sound`（音效开关，iOS 额外持久化）、`gc-pending-score`（待补交的 Game Center 成绩） |
 | `touchstart/move/end` | `touchesBegan/Moved/Ended` | 16pt 阈值、连续转向、点按冲刺、`touchesCancelled` 兜底 |
 | CSS `@keyframes shake` / 脉冲 / `scorePop` | `GeometryEffect` + SwiftUI `withAnimation` | 死亡抖动、LIVE 呼吸灯、得分数字放大高亮 |
 | `backdrop-filter: blur(3px)` | `UIVisualEffectView(.dark)` | 面板下的棋盘仍隐约可见 |
@@ -163,6 +207,8 @@ ReverseSnake-iOS/
 - 工程曾被 Xcode 自动升级写入 `IPHONEOS_DEPLOYMENT_TARGET = 27.0`（导致装不进 iOS 18.6 模拟器），已恢复为 16.0；Bundle ID 保持 `com.woodystudio.reversesnake`。
 - 改名 Snake Feast：`xcodebuild build` → **BUILD SUCCEEDED**，产物 `Info.plist` 的 `CFBundleDisplayName = "Snake Feast"`，`CFBundleIdentifier` / `MinimumOSVersion` 未变；iPhone 16 Pro 与 iPad Pro 11 英寸截图验证顶栏显示 `SNAKE FEAST`（双色）无截断、无重叠，主屏图标名显示 `Snake Feast`，界面内无旧名残留。
 - 多语言：`plutil -lint` 校验 `project.pbxproj` 与 4 份 `.strings` 均 OK；静态校验 4 份文案各 42 个 key，与 `L10n.K` 常量零差异；产物含 `en / en-US / zh-Hans / zh-Hant` 四个 `.lproj`。用 `-AppleLanguages` 分别启动，iPhone 16 Pro 上验证简体 / 繁体 / 英文（美国）的开局、暂停、结算面板与倒计时 CG 文案，iPad Pro 11 英寸验证英文 / 简体 HUD 主副标签；三种语言均无残留、无截断重叠。英文开局文案经缩短后保持 3 行，不撑高面板。
+
+- 全球排行榜（Game Center）：Debug / Release `xcodebuild build` 均 **BUILD SUCCEEDED**，无新增编译警告；4 份文案各 69 个 key，与 `L10n.K` 零差异。iPhone 16 Pro 截图验证开局面板「全球排行」按钮、结算页名次条与「查看排行榜」、排行榜面板（前三奖牌色 / 50 行列表 / 固定「我」行 / 页脚）、未登录态、英文版；iPad Pro 11 英寸验证排行榜面板居中 470pt。关闭按钮与页脚已避开四角准星。真实 Game Center 数据需在 App Store Connect 配置排行榜后用真机验证。
 
 ## 备注
 

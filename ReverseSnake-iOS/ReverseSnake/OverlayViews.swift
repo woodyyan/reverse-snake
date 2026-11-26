@@ -43,7 +43,7 @@ struct PrimaryButton: View {
 }
 
 /// Monospaced status strip + status lamp, mirroring the HUD state label.
-private struct PanelBadge: View {
+struct PanelBadge: View {
     let codeKey: String
     let color: Color
 
@@ -147,30 +147,76 @@ private struct CornerReticles: View {
     }
 }
 
+/// Shared dark-energy card: HUD gradient, border, scan line, corner reticles.
+struct EnergyCardBackground: View {
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 18)
+                .fill(LinearGradient(colors: [Theme.hudTop, Theme.hudBottom],
+                                     startPoint: .top, endPoint: .bottom))
+            RoundedRectangle(cornerRadius: 18)
+                .fill(LinearGradient(colors: [Theme.cyan.opacity(0.07), Color.clear],
+                                     startPoint: .top, endPoint: .bottom))
+        }
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.hudBorder, lineWidth: 1))
+        .overlay(ScanLine())
+        .overlay(CornerReticles())
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .shadow(color: Color.black.opacity(0.45), radius: 40, y: 16)
+        .shadow(color: Theme.cyan.opacity(0.14), radius: 26)
+    }
+}
+
 /// Ready / paused / game-over panels over a blurred dark stage.
 /// All gameplay hints live here so the running board keeps the full screen.
 struct GameOverlayView: View {
     @ObservedObject var engine: GameEngine
     let m: LayoutMetrics
+    @ObservedObject private var gc = GameCenterManager.shared
+    @State private var showBoard = GameOverlayView.debugShowBoard
 
     var body: some View {
         ZStack {
             BackdropBlur(style: .dark)
             Color(hex: 0x050A14).opacity(0.30)
             GeometryReader { g in
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: 0) {
-                        panel
-                            .frame(maxWidth: 470)
+                let padV: CGFloat = m.isShortLandscape ? 8 : 16
+                if showBoard {
+                    LeaderboardPanel(gc: gc, m: m, localBest: engine.best) {
+                        setBoard(false)
                     }
-                    .frame(maxWidth: .infinity, minHeight: g.size.height, alignment: .center)
+                    .frame(maxWidth: 470)
+                    .frame(height: max(220, min(g.size.height - 2 * padV, 660)))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .padding(.horizontal, 16)
-                    .padding(.vertical, m.isShortLandscape ? 8 : 16)
+                    .transition(.opacity.combined(with: .scale(scale: 0.97)))
+                } else {
+                    ScrollView(.vertical, showsIndicators: false) {
+                        VStack(spacing: 0) {
+                            panel
+                                .frame(maxWidth: 470)
+                        }
+                        .frame(maxWidth: .infinity, minHeight: g.size.height, alignment: .center)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, padV)
+                    }
+                    .transition(.opacity)
                 }
             }
         }
         .clipped()
     }
+
+    private func setBoard(_ on: Bool) {
+        Haptics.shared.tap()
+        withAnimation(.easeOut(duration: 0.22)) { showBoard = on }
+    }
+
+    #if DEBUG
+    private static var debugShowBoard: Bool { DebugMock.showBoard }
+    #else
+    private static var debugShowBoard: Bool { false }
+    #endif
 
     private var titleFont: CGFloat { m.isShortLandscape ? 19 : (m.compact ? 22 : 26) }
     private var bodyFont: CGFloat { m.isShortLandscape ? 12 : (m.compact ? 12.5 : 13.5) }
@@ -188,22 +234,7 @@ struct GameOverlayView: View {
         }
     }
 
-    private var cardBackground: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 18)
-                .fill(LinearGradient(colors: [Theme.hudTop, Theme.hudBottom],
-                                     startPoint: .top, endPoint: .bottom))
-            RoundedRectangle(cornerRadius: 18)
-                .fill(LinearGradient(colors: [Theme.cyan.opacity(0.07), Color.clear],
-                                     startPoint: .top, endPoint: .bottom))
-        }
-        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.hudBorder, lineWidth: 1))
-        .overlay(ScanLine())
-        .overlay(CornerReticles())
-        .clipShape(RoundedRectangle(cornerRadius: 18))
-        .shadow(color: Color.black.opacity(0.45), radius: 40, y: 16)
-        .shadow(color: Theme.cyan.opacity(0.14), radius: 26)
-    }
+    private var cardBackground: some View { EnergyCardBackground() }
 
     private var operationHints: some View {
         HStack(spacing: m.compact ? 8 : 12) {
@@ -241,6 +272,11 @@ struct GameOverlayView: View {
                 engine.start()
             }
             .padding(.top, m.isShortLandscape ? 14 : 20)
+
+            SecondaryButton(icon: "trophy.fill", titleKey: L10n.K.lbOpen, compact: m.compact) {
+                setBoard(true)
+            }
+            .padding(.top, m.isShortLandscape ? 8 : 12)
         }
         .padding(.vertical, cardPadV)
         .padding(.horizontal, cardPadH)
@@ -307,10 +343,20 @@ struct GameOverlayView: View {
             }
             .padding(.top, m.isShortLandscape ? 8 : 14)
 
+            RankStrip(rank: gc.roundRank, isNewBest: engine.isNewBest, compact: m.compact) {
+                setBoard(true)
+            }
+            .padding(.top, m.isShortLandscape ? 8 : 12)
+
             PrimaryButton(titleKey: L10n.K.replay, fontSize: m.compact ? 14 : 15) {
                 engine.start()
             }
             .padding(.top, m.isShortLandscape ? 14 : 20)
+
+            SecondaryButton(icon: "trophy.fill", titleKey: L10n.K.lbView, compact: m.compact) {
+                setBoard(true)
+            }
+            .padding(.top, m.isShortLandscape ? 8 : 12)
         }
         .padding(.vertical, cardPadV)
         .padding(.horizontal, cardPadH)

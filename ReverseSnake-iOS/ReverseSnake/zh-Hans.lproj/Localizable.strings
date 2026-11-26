@@ -51,3 +51,34 @@
 "panel.replay" = "再来一局";
 "panel.over.hit" = "一头撞上了蛇身";
 "panel.over.caught" = "被蛇追上了";
+
+/* 排行榜（Game Center） */
+"lb.open" = "全球排行";
+"lb.view" = "查看排行榜";
+"lb.badge" = "排行 // 实时";
+"lb.title" = "全球排行榜";
+"lb.tab.global" = "全球";
+"lb.tab.friends" = "好友";
+"lb.tab.weekly" = "本周";
+"lb.me" = "我";
+"lb.unranked" = "暂无排名";
+"lb.empty" = "还没有成绩，来拿下第一名";
+"lb.empty.friends" = "好友还没有成绩，邀请他们来挑战";
+"lb.error" = "暂时无法连接 Game Center";
+"lb.retry" = "重试";
+"lb.updated" = "更新于 %@";
+"lb.login.title" = "登录 Game Center 参与全球排行";
+"lb.login.body" = "前往「设置 › Game Center」登录后返回游戏";
+"lb.login.button" = "登录 Game Center";
+"lb.local.best" = "本机最高 %ld";
+"lb.open.system" = "在 Game Center 中查看";
+"lb.close" = "关闭";
+
+/* 结算页名次条 */
+"rank.global" = "全球 #%ld";
+"rank.friends" = "好友 #%ld";
+"rank.new.best" = "新纪录";
+"rank.submitting" = "正在提交成绩…";
+"rank.synced" = "成绩已同步到 Game Center";
+"rank.login" = "登录 Game Center，冲上全球榜";
+"rank.offline" = "离线 · 联网后自动提交";

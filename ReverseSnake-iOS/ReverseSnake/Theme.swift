@@ -48,6 +48,10 @@ enum Theme {
     static let green = Color(hex: 0x3DFFC0)
     static let red = Color(hex: 0xE5484D)
     static let danger = Color(hex: 0xFF5C6E)
+    // Leaderboard podium
+    static let gold = Color(hex: 0xFFD166)
+    static let silver = Color(hex: 0xC9D6E8)
+    static let bronze = Color(hex: 0xE09F6B)
 
     static let hudTop = Color(hex: 0x0D1728)
     static let hudBottom = Color(hex: 0x080E1B)

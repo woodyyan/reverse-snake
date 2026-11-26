@@ -71,6 +71,37 @@ enum L10n {
         static let replay = "panel.replay"
         static let overHitBody = "panel.over.hit"
         static let overCaught = "panel.over.caught"
+
+        // Leaderboard (Game Center)
+        static let lbOpen = "lb.open"
+        static let lbView = "lb.view"
+        static let lbBadge = "lb.badge"
+        static let lbTitle = "lb.title"
+        static let lbTabGlobal = "lb.tab.global"
+        static let lbTabFriends = "lb.tab.friends"
+        static let lbTabWeekly = "lb.tab.weekly"
+        static let lbMe = "lb.me"
+        static let lbUnranked = "lb.unranked"
+        static let lbEmpty = "lb.empty"
+        static let lbEmptyFriends = "lb.empty.friends"
+        static let lbError = "lb.error"
+        static let lbRetry = "lb.retry"
+        static let lbUpdated = "lb.updated"
+        static let lbLoginTitle = "lb.login.title"
+        static let lbLoginBody = "lb.login.body"
+        static let lbLoginButton = "lb.login.button"
+        static let lbLocalBest = "lb.local.best"
+        static let lbOpenSystem = "lb.open.system"
+        static let lbClose = "lb.close"
+
+        // Game-over rank strip
+        static let rankGlobal = "rank.global"
+        static let rankFriends = "rank.friends"
+        static let rankNewBest = "rank.new.best"
+        static let rankSubmitting = "rank.submitting"
+        static let rankSynced = "rank.synced"
+        static let rankLogin = "rank.login"
+        static let rankOffline = "rank.offline"
     }
 
     /// SwiftUI text. LocalizedStringKey keeps locale changes reactive.

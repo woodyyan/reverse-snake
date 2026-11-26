@@ -51,3 +51,34 @@
 "panel.replay" = "Play Again";
 "panel.over.hit" = "You ran into the snake";
 "panel.over.caught" = "The snake caught you";
+
+/* Leaderboard (Game Center) */
+"lb.open" = "Leaderboard";
+"lb.view" = "View Leaderboard";
+"lb.badge" = "RANKING // LIVE";
+"lb.title" = "Global Leaderboard";
+"lb.tab.global" = "Global";
+"lb.tab.friends" = "Friends";
+"lb.tab.weekly" = "This Week";
+"lb.me" = "YOU";
+"lb.unranked" = "Not ranked yet";
+"lb.empty" = "No scores yet — take the #1 spot";
+"lb.empty.friends" = "No friend scores yet — challenge them";
+"lb.error" = "Can't reach Game Center right now";
+"lb.retry" = "Retry";
+"lb.updated" = "Updated %@";
+"lb.login.title" = "Sign in to Game Center to join the global ranking";
+"lb.login.body" = "Go to Settings › Game Center, then come back";
+"lb.login.button" = "Sign In to Game Center";
+"lb.local.best" = "Device best %ld";
+"lb.open.system" = "Open in Game Center";
+"lb.close" = "Close";
+
+/* Game-over rank strip */
+"rank.global" = "Global #%ld";
+"rank.friends" = "Friends #%ld";
+"rank.new.best" = "NEW BEST";
+"rank.submitting" = "Submitting score…";
+"rank.synced" = "Score synced to Game Center";
+"rank.login" = "Sign in to Game Center to get ranked";
+"rank.offline" = "Offline · will submit when online";
