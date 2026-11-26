@@ -9,6 +9,25 @@
 - 多语言：简体中文 / 繁体中文 / 英文（美国），跟随系统自动切换
 - 方向：iPhone 竖屏 / 横屏，iPad 四方向；支持旋转、分屏（Split View）与安全区
 - Bundle ID：`com.woodystudio.reversesnake`，版本号 1.6（与网页版一致）
+- 外观：浅色「晨纸 Daylight」/ 深色「夜行 Nocturne」双主题，默认跟随系统，可在主页或暂停面板切换
+
+## UI v2 设计（2026-11）
+
+设计稿：`Design/ui-v2-proposal/index.html`。本版只改视觉与布局，玩法、手感参数、Game Center、多语言逻辑不变。
+
+| 模块 | v2 方案 |
+|---|---|
+| 主题 | `Palette.night`（#07090E 底 · 冷蓝蛇 #5CC8FF · 橙点 #FF7A2F · 金种 #FFC83D）/ `Palette.daylight`（#F3EFE6 纸底 · 墨绿蛇 #1F6B52 · 珊瑚点 #FF5A47 · 金种 #E9A410）；一种颜色一个语义 |
+| 外观切换 | `AppearanceStore`：跟随系统 / 浅色 / 深色，存 `UserDefaults`，以 window `overrideUserInterfaceStyle` 生效（SwiftUI、CG 棋盘、状态栏同步切换）|
+| 主页 | 独立页：品牌 + 动态棋盘预览 + 规则 + 三元素图例（你 / 金种 / 蛇）+ 开始 + 排行榜 / 音效 / 外观 |
+| 游戏中 | 顶栏只留暂停；得分居中 + 最高分；3 个迷你指标（蛇长 / 空间 / 追击，带微型进度条）|
+| 棋盘元素 | 交点点阵替代网格线；连续圆管蛇（尾细暗 → 头粗亮，带双眼）；金色种子替代青绿晶体；玩家外环 = 冲刺冷却；吃到金环 + “+1”；冲刺残影；逼近红色暗角；死亡蛇身转红 |
+| 暂停 | 底部抽屉：继续 / 重新开始 / 音效开关 / 外观分段 / 排行榜 |
+| 结算 | 卡片弹入：原因 + 滚动大分数 + 新纪录 + 3 项数据 + 名次条 + 再来一局 / 返回主页 |
+| 排行榜 | 全屏页：分段 Tab + 前三领奖台 + 列表 + 底部固定「我」|
+| 图标 | I3「S 进化」：扁平 S 形蛇 + 橙色光点；含 iOS 18 深色 / 着色变体 |
+
+DEBUG 截图布景：`-SFDebugState running|paused|over|countdown`（冻结一帧代表性局面），配合 `-GCMock ranked|none`、`-GCShowBoard YES`。
 
 ## 运行
 
@@ -55,17 +74,17 @@ ReverseSnake-iOS/
     ├── zh-Hant.lproj/Localizable.strings   # 繁体中文
     ├── Localization.swift           # L10n 键定义 / 查表 / 语言切换中心
     ├── ReverseSnakeApp.swift        # @main App 入口（含音频预热 + locale 注入）
-    ├── Theme.swift                  # 调色板 + LayoutMetrics + 动态网格计算
+    ├── Theme.swift                  # 双主题 Palette + 外观切换 AppearanceStore + LayoutMetrics
     ├── GameEngine.swift             # 状态机 / 蛇 AI / BFS / flood fill / 计分 / 粒子 / 存档
     ├── SoundEngine.swift            # AVAudioEngine 波形合成（WebAudio 等价）
     ├── Haptics.swift                # UIFeedbackGenerator 震动反馈（按事件分级）
-    ├── GameBoardView.swift          # UIView + CGContext 渲染、CADisplayLink、触控
-    ├── HUDView.swift                # 5 项深色能量仪表 HUD
-    ├── OverlayViews.swift           # 深色能量弹框（开局 / 暂停 / 结算）+ 毛玻璃遮罩 + 高亮操作提示
-    ├── ControlsView.swift           # 左上角 Logo + 深色能量图标按钮（暂停 / 音效 / 重开）
-    ├── ContentView.swift            # 满屏棋盘布局、动态网格、抖动动画、前后台暂停、Game Center 事件桥接
+    ├── GameBoardView.swift          # BoardScene + CG 渲染器、CADisplayLink、触控、主页棋盘预览
+    ├── HUDView.swift                # 游戏顶栏：暂停 / 得分 / 最高 + 3 个迷你指标
+    ├── OverlayViews.swift           # 主页 HomeView、暂停抽屉 PauseSheet、结算卡 GameOverCard
+    ├── ControlsView.swift           # 共享组件：主 / 次按钮、圆形图标按钮、Pill、头像、元素图例
+    ├── ContentView.swift            # 分层布局（游戏 / 结算 / 暂停 / 主页 / 排行榜）、动态网格、抖动、Game Center 事件桥接
     ├── GameCenterManager.swift      # Game Center 登录 / 提交 / 拉榜 / 离线补交 / 系统榜跳转（+ DEBUG mock）
-    ├── LeaderboardView.swift        # 排行榜面板、结算页名次条、次级按钮
+    ├── LeaderboardView.swift        # 排行榜页（领奖台 / 列表 / 我的名次）、结算页名次条
     └── ReverseSnake.entitlements    # com.apple.developer.game-center
 ```
 
@@ -213,11 +232,14 @@ xcrun simctl launch booted com.woodystudio.reversesnake -GCMock signedout -GCSho
 ## 备注
 
 - 震动无独立开关（跟随系统 Taptic 能力），与音效开关解耦；如需可控，可加第 4 个顶栏按钮或跟随 `soundOn`。
-- Logo / AppIcon 由 `Design/generate_icon.swift`（macOS Core Graphics 脚本，无依赖）生成，设计概念「S-Chase」（极简，只有两个元素）：一条沿游戏直角走位绘制的 S 形能量蛇（S = Snake，尾部左下暗且细 → 蛇头右上亮且粗，青蓝渐变 + 柔光），蛇头前方一颗橙色玩家光球——追逐即全部玩法；深海军蓝渐变底，无网格 / 眼睛 / 晶体 / 准星。`icon` 模式输出 1024×1024 不透明 AppIcon；`mark` 为同一画面放大 1.14 倍，适配 26–34pt 顶栏 Logo。重新生成：
+- AppIcon / Logo 由 `Design/generate_icon.swift`（macOS Core Graphics 脚本，无依赖）生成，v2 概念「S 进化」：扁平 S 形蛇（尾左下暗细 → 头右上亮粗，夜行色板，无外发光）+ 蛇头前方橙色玩家光点；`icon` / `dark` / `tinted` 三种模式对应 iOS 18 主屏默认 / 深色 / 着色外观，均为 1024×1024 不透明 PNG。主页品牌位 Logo 即默认图标缩放。重新生成：
   ```bash
-  swiftc -O Design/generate_icon.swift -o /tmp/rs-icon-gen
-  /tmp/rs-icon-gen ReverseSnake/Assets.xcassets/AppIcon.appiconset/Icon-1024.png icon
-  /tmp/rs-icon-gen /tmp/mark.png mark   # 再用 sips -z 128/256/384 导出 Logo.imageset 1x/2x/3x
+  swiftc -O Design/generate_icon.swift -o /tmp/sf-icon-gen
+  A=ReverseSnake/Assets.xcassets/AppIcon.appiconset; L=ReverseSnake/Assets.xcassets/Logo.imageset
+  /tmp/sf-icon-gen $A/Icon-1024.png icon
+  /tmp/sf-icon-gen $A/Icon-1024-Dark.png dark
+  /tmp/sf-icon-gen $A/Icon-1024-Tinted.png tinted
+  for z in 128:Logo 256:Logo@2x 384:Logo@3x; do sips -z ${z%%:*} ${z%%:*} $A/Icon-1024.png --out $L/${z#*:}.png; done
   ```
 - `Assets.xcassets` 已加入 Resources Build Phase，`ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon`；LaunchScreen 由 `UILaunchScreen_Generation` 自动生成。
 - `GENERATE_INFOPLIST_FILE = YES` 时 `CFBundleName` 由 `PRODUCT_NAME` 固定生成（`ReverseSnake`），`INFOPLIST_KEY_CFBundleName` build setting 不生效；用户可见名称由 `CFBundleDisplayName` 决定，改游戏名只需改这一项 + 顶栏文案。

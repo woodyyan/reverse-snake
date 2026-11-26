@@ -1,10 +1,9 @@
 import SwiftUI
 import UIKit
 
-// MARK: - Core Graphics helpers (Canvas 2D equivalents)
+// MARK: - Core Graphics helpers
 
-private func radialFill(_ ctx: CGContext,
-                        center: CGPoint, r0: CGFloat, r1: CGFloat,
+private func radialFill(_ ctx: CGContext, center: CGPoint, r0: CGFloat, r1: CGFloat,
                         stops: [(CGFloat, UIColor)], rect: CGRect) {
     let colors = stops.map { $0.1.cgColor } as CFArray
     let locations = stops.map { $0.0 }
@@ -13,8 +12,6 @@ private func radialFill(_ ctx: CGContext,
     ctx.saveGState()
     ctx.addRect(rect)
     ctx.clip()
-    // Canvas 2D fills the area inside r0 with the first stop and beyond r1
-    // with the last stop; CGGradient needs both options to behave the same.
     ctx.drawRadialGradient(gradient,
                            startCenter: center, startRadius: max(0, r0),
                            endCenter: center, endRadius: max(r0 + 0.01, r1),
@@ -22,319 +19,271 @@ private func radialFill(_ ctx: CGContext,
     ctx.restoreGState()
 }
 
-private func linearFill(_ ctx: CGContext,
-                        from: CGPoint, to: CGPoint,
-                        stops: [(CGFloat, UIColor)], rect: CGRect) {
-    let colors = stops.map { $0.1.cgColor } as CFArray
-    let locations = stops.map { $0.0 }
-    guard let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
-                                    colors: colors, locations: locations) else { return }
-    ctx.saveGState()
-    ctx.addRect(rect)
-    ctx.clip()
-    ctx.drawLinearGradient(gradient, start: from, end: to, options: [])
-    ctx.restoreGState()
-}
-
-private func addRoundRect(_ ctx: CGContext, _ rect: CGRect, _ r: CGFloat) {
-    ctx.addPath(UIBezierPath(roundedRect: rect, cornerRadius: r).cgPath)
-}
-
 private func fillRoundRect(_ ctx: CGContext, _ rect: CGRect, _ r: CGFloat, _ color: UIColor) {
     ctx.beginPath()
-    addRoundRect(ctx, rect, r)
+    ctx.addPath(UIBezierPath(roundedRect: rect, cornerRadius: r).cgPath)
     ctx.setFillColor(color.cgColor)
     ctx.fillPath()
 }
 
-private func strokeRoundRect(_ ctx: CGContext, _ rect: CGRect, _ r: CGFloat, _ color: UIColor, _ width: CGFloat) {
-    ctx.beginPath()
-    addRoundRect(ctx, rect, r)
-    ctx.setStrokeColor(color.cgColor)
-    ctx.setLineWidth(width)
-    ctx.strokePath()
-}
-
-private func fillCircle(_ ctx: CGContext, _ center: CGPoint, _ r: CGFloat, _ color: UIColor) {
-    ctx.beginPath()
-    ctx.addArc(center: center, radius: r, startAngle: 0, endAngle: 2 * CGFloat.pi, clockwise: false)
+private func fillCircle(_ ctx: CGContext, _ c: CGPoint, _ r: CGFloat, _ color: UIColor) {
     ctx.setFillColor(color.cgColor)
-    ctx.fillPath()
+    ctx.fillEllipse(in: CGRect(x: c.x - r, y: c.y - r, width: r * 2, height: r * 2))
 }
 
-private func textSize(_ text: String, _ font: UIFont) -> CGSize {
-    (text as NSString).size(withAttributes: [.font: font])
-}
-
-private func drawText(_ text: String, at point: CGPoint, font: UIFont, color: UIColor) {
-    (text as NSString).draw(at: point, withAttributes: [.font: font, .foregroundColor: color])
-}
-
-/// Rotating dashed ring, radius .40 cell — all marks stay inside one cell.
-private func inCellRing(_ ctx: CGContext, cx: CGFloat, cy: CGFloat,
-                        color: UIColor, phase: Double, cell: CGFloat) {
-    ctx.saveGState()
-    ctx.translateBy(x: cx, y: cy)
-    ctx.rotate(by: CGFloat(phase))
-    ctx.setLineDash(phase: 0, lengths: [cell * 0.10, cell * 0.09])
+private func strokeCircle(_ ctx: CGContext, _ c: CGPoint, _ r: CGFloat, _ color: UIColor, _ w: CGFloat) {
     ctx.setStrokeColor(color.cgColor)
-    ctx.setLineWidth(1.2)
-    ctx.beginPath()
-    ctx.addArc(center: .zero, radius: cell * 0.40,
-               startAngle: 0, endAngle: 2 * CGFloat.pi, clockwise: false)
-    ctx.strokePath()
-    ctx.setLineDash(phase: 0, lengths: [])
-    ctx.restoreGState()
+    ctx.setLineWidth(w)
+    ctx.strokeEllipse(in: CGRect(x: c.x - r, y: c.y - r, width: r * 2, height: r * 2))
 }
 
-private func inCellBrackets(_ ctx: CGContext, cx: CGFloat, cy: CGFloat,
-                            color: UIColor, width: CGFloat, cell: CGFloat) {
-    let inset = cell * 0.40, tick = cell * 0.09
-    ctx.setStrokeColor(color.cgColor)
-    ctx.setLineWidth(width)
-    ctx.beginPath()
-    for c in [(-1, -1), (1, -1), (-1, 1), (1, 1)] {
-        let bx = cx + CGFloat(c.0) * inset
-        let by = cy + CGFloat(c.1) * inset
-        ctx.move(to: CGPoint(x: bx - CGFloat(c.0) * tick, y: by))
-        ctx.addLine(to: CGPoint(x: bx, y: by))
-        ctx.addLine(to: CGPoint(x: bx, y: by - CGFloat(c.1) * tick))
+private func roundedFont(_ size: CGFloat, _ weight: UIFont.Weight) -> UIFont {
+    let base = UIFont.systemFont(ofSize: size, weight: weight)
+    guard let d = base.fontDescriptor.withDesign(.rounded) else { return base }
+    return UIFont(descriptor: d, size: size)
+}
+
+private func drawCentered(_ text: String, at c: CGPoint, font: UIFont, color: UIColor) {
+    let attrs: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: color]
+    let size = (text as NSString).size(withAttributes: attrs)
+    (text as NSString).draw(at: CGPoint(x: c.x - size.width / 2, y: c.y - size.height / 2),
+                            withAttributes: attrs)
+}
+
+// MARK: - Scene: everything the renderer needs for one frame
+
+struct BoardScene {
+    var cols: Int
+    var rows: Int
+    var cell: CGFloat
+    var time: Double
+    var snake: [GridPoint]
+    var player: GridPoint
+    var food: GridPoint?
+    /// 0...1, 1 = dash ready (drives the player's cooldown ring).
+    var dashCharge: CGFloat = 1
+    var dead = false
+    /// 0...1 red edge vignette while the snake head is close.
+    var threat: CGFloat = 0
+    var flash: CGFloat = 0
+    var particles: [Particle] = []
+    var eatFx: [EatFx] = []
+    var dashFx: DashFx?
+    /// Remaining countdown in ms, nil when not counting down.
+    var countdown: Double?
+}
+
+extension BoardScene {
+    init(engine: GameEngine, cols: Int, rows: Int, cell: CGFloat) {
+        let t = engine.renderTime
+        var threat: CGFloat = 0
+        if engine.phase == .running, let head = engine.snake.first {
+            let d = engine.dist(head, engine.player)
+            if d <= 3 { threat = CGFloat(Double(4 - d) / 4 * (0.75 + 0.25 * sin(t / 130))) }
+        }
+        self.init(cols: cols, rows: rows, cell: cell, time: t,
+                  snake: engine.snake, player: engine.player, food: engine.dot,
+                  dashCharge: CGFloat(max(0, min(1, 1 - engine.dashCd / engine.dashCD))),
+                  dead: engine.phase == .over, threat: threat, flash: engine.flash,
+                  particles: engine.particles, eatFx: engine.eatFx, dashFx: engine.dashFx,
+                  countdown: engine.phase == .countdown ? engine.countdown : nil)
     }
-    ctx.strokePath()
 }
 
-// MARK: - Renderer: 1:1 port of render() in index.html
+// MARK: - Renderer (design v2: dot lattice, tube snake, golden seed, orb player)
 
 enum BoardRenderer {
-    static func draw(_ ctx: CGContext, engine: GameEngine,
-                     cols: Int, rows: Int, cell: CGFloat) {
-        let W = CGFloat(cols) * cell
-        let H = CGFloat(rows) * cell
+    static func draw(_ ctx: CGContext, scene s: BoardScene, palette p: Palette) {
+        UIGraphicsPushContext(ctx)
+        defer { UIGraphicsPopContext() }
+
+        let cell = s.cell
+        let W = CGFloat(s.cols) * cell, H = CGFloat(s.rows) * cell
         let board = CGRect(x: 0, y: 0, width: W, height: H)
-        let t = engine.renderTime                 // ms, same clock as rAF
+        let t = s.time
+        func center(_ g: GridPoint) -> CGPoint {
+            CGPoint(x: (CGFloat(g.x) + 0.5) * cell, y: (CGFloat(g.y) + 0.5) * cell)
+        }
 
         ctx.clear(board)
 
-        // Deep-space backdrop + cold centre light
-        radialFill(ctx,
-                   center: CGPoint(x: W * 0.5, y: H * 0.42),
-                   r0: W * 0.04, r1: W * 0.80,
-                   stops: [(0, UIColor(hex: 0x12223C)),
-                           (0.6, UIColor(hex: 0x0A1426)),
-                           (1, UIColor(hex: 0x050A14))],
-                   rect: board)
+        // Backdrop: soft centre light
+        radialFill(ctx, center: CGPoint(x: W * 0.5, y: H * 0.42), r0: 0, r1: max(W, H) * 0.8,
+                   stops: [(0, p.boardCenter), (1, p.board)], rect: board)
 
-        // Precision grid: a major tick every 5 cells
-        ctx.setLineWidth(1)
-        for x in 1..<cols {
-            let major = x % 5 == 0
-            ctx.setStrokeColor(UIColor(hex: 0x6EAFFF, alpha: major ? 0.13 : 0.055).cgColor)
-            let px = CGFloat(x) * cell + 0.5
-            ctx.beginPath()
-            ctx.move(to: CGPoint(x: px, y: 0))
-            ctx.addLine(to: CGPoint(x: px, y: H))
-            ctx.strokePath()
-        }
-        for y in 1..<rows {
-            let major = y % 5 == 0
-            ctx.setStrokeColor(UIColor(hex: 0x6EAFFF, alpha: major ? 0.13 : 0.055).cgColor)
-            let py = CGFloat(y) * cell + 0.5
-            ctx.beginPath()
-            ctx.move(to: CGPoint(x: 0, y: py))
-            ctx.addLine(to: CGPoint(x: W, y: py))
-            ctx.strokePath()
-        }
-
-        // Slow scanning band
-        let period = H + 120
-        let scanY = CGFloat(t * 0.032).truncatingRemainder(dividingBy: period) - 60
-        linearFill(ctx,
-                   from: CGPoint(x: 0, y: scanY - 34),
-                   to: CGPoint(x: 0, y: scanY + 34),
-                   stops: [(0, UIColor(hex: 0x5ABEFF, alpha: 0)),
-                           (0.5, UIColor(hex: 0x5ABEFF, alpha: 0.055)),
-                           (1, UIColor(hex: 0x5ABEFF, alpha: 0))],
-                   rect: CGRect(x: 0, y: scanY - 34, width: W, height: 68))
-
-        // Corner reticles + coordinate plate
-        let L = cell * 1.15, off: CGFloat = 6
-        ctx.setStrokeColor(UIColor(hex: 0x7DC8FF, alpha: 0.38).cgColor)
-        ctx.setLineWidth(1.4)
+        // Dot lattice at grid intersections (replaces grid lines)
+        let dr = max(0.8, cell * 0.055)
         ctx.beginPath()
-        for c in [(off, off, 1, 1), (W - off, off, -1, 1),
-                  (off, H - off, 1, -1), (W - off, H - off, -1, -1)] {
-            ctx.move(to: CGPoint(x: c.0, y: c.1 + CGFloat(c.3) * L))
-            ctx.addLine(to: CGPoint(x: c.0, y: c.1))
-            ctx.addLine(to: CGPoint(x: c.0 + CGFloat(c.2) * L, y: c.1))
+        for x in 1..<s.cols {
+            for y in 1..<s.rows {
+                ctx.addEllipse(in: CGRect(x: CGFloat(x) * cell - dr, y: CGFloat(y) * cell - dr,
+                                          width: dr * 2, height: dr * 2))
+            }
         }
-        ctx.strokePath()
+        ctx.setFillColor(p.gridDot.cgColor)
+        ctx.fillPath()
 
-        let plateFont = UIFont.monospacedSystemFont(ofSize: max(8, round(cell * 0.30)), weight: .semibold)
-        let plate = String(format: L10n.s(L10n.K.boardGrid), cols, rows)
-        let plateSize = textSize(plate, plateFont)
-        drawText(plate,
-                 at: CGPoint(x: W - 12 - plateSize.width, y: 10),
-                 font: plateFont, color: UIColor(hex: 0x8CB9EB, alpha: 0.34))
-
-        // Edge threat glow when the head is within 3 cells
-        let dhead = engine.dist(engine.snake[0], engine.player)
-        if engine.phase == .running && dhead <= 3 {
-            let a = CGFloat(Double(4 - dhead) / 4 * 0.20 * (0.75 + 0.25 * sin(t / 130)))
-            radialFill(ctx,
-                       center: CGPoint(x: W / 2, y: H / 2),
-                       r0: W * 0.28, r1: W * 0.74,
-                       stops: [(0, UIColor(hex: 0xFF465A, alpha: 0)),
-                               (1, UIColor(hex: 0xFF465A, alpha: a))],
-                       rect: board)
-        }
-
-        // Target crystal: cell-locked ring + brackets + rotating diamond
-        if let dot = engine.dot {
-            let cx = (CGFloat(dot.x) + 0.5) * cell
-            let cy = (CGFloat(dot.y) + 0.5) * cell
-            let pulse = 0.5 + 0.5 * sin(t / 240)
-            radialFill(ctx, center: CGPoint(x: cx, y: cy),
-                       r0: cell * 0.04, r1: cell * 0.48,
-                       stops: [(0, UIColor(hex: 0x3DFFC0, alpha: 0.22 + CGFloat(pulse) * 0.18)),
-                               (1, UIColor(hex: 0x3DFFC0, alpha: 0))],
-                       rect: CGRect(x: cx - cell * 0.5, y: cy - cell * 0.5,
-                                    width: cell, height: cell))
-            inCellRing(ctx, cx: cx, cy: cy,
-                       color: UIColor(hex: 0x3DFFC0, alpha: 0.45 + CGFloat(pulse) * 0.35),
-                       phase: t / 1600, cell: cell)
-            inCellBrackets(ctx, cx: cx, cy: cy,
-                           color: UIColor(hex: 0x3DFFC0, alpha: 0.75),
-                           width: 1.2, cell: cell)
-
+        // Golden seed: rounded diamond + highlight, breathing glow
+        if let f = s.food {
+            let c = center(f)
+            let pulse = CGFloat(0.5 + 0.5 * sin(t / 420))
+            radialFill(ctx, center: c, r0: 0, r1: cell * 0.72,
+                       stops: [(0, p.food.alpha(0.30 + 0.18 * pulse)), (1, p.food.alpha(0))],
+                       rect: CGRect(x: c.x - cell * 0.75, y: c.y - cell * 0.75,
+                                    width: cell * 1.5, height: cell * 1.5))
             ctx.saveGState()
-            ctx.translateBy(x: cx, y: cy)
-            ctx.rotate(by: CGFloat(Double.pi / 4 + t / 3000))
-            let s = cell * 0.22 + CGFloat(pulse) * cell * 0.02
-            let crystal = CGRect(x: -s, y: -s, width: s * 2, height: s * 2)
-            fillRoundRect(ctx, crystal, cell * 0.06, UIColor(hex: 0x3DFFC0))
-            strokeRoundRect(ctx, crystal, cell * 0.06, UIColor(hex: 0xDCFFF5, alpha: 0.9), 1)
-            ctx.setFillColor(UIColor(hex: 0xFFFFFF, alpha: 0.92).cgColor)
-            ctx.fill(CGRect(x: -s * 0.24, y: -s * 0.24, width: s * 0.48, height: s * 0.48))
+            ctx.translateBy(x: c.x, y: c.y)
+            ctx.rotate(by: .pi / 4)
+            let k = cell * (0.23 + 0.015 * pulse)
+            fillRoundRect(ctx, CGRect(x: -k, y: -k, width: k * 2, height: k * 2), k * 0.32, p.food)
+            fillRoundRect(ctx, CGRect(x: -k * 0.55, y: -k * 0.55, width: k * 0.5, height: k * 0.5),
+                          k * 0.14, p.foodHi.alpha(0.9))
             ctx.restoreGState()
         }
 
-        // Snake: energy vertebrae, brightness flowing from tail to head
-        let last = max(1, engine.snake.count - 1)
-        if engine.snake.count > 1 {
-            for i in stride(from: engine.snake.count - 1, through: 1, by: -1) {
-                let ratio = 1 - Double(i) / Double(last)
-                let flow = 0.5 + 0.5 * sin(t / 240 - Double(i) * 0.42)
-                let mix = max(0, min(1, ratio * 0.95 + flow * 0.06))
-                let col = UIColor.mix(UIColor(hex: 0x0A2A55), UIColor(hex: 0x5AD8FF), CGFloat(mix))
-                let x0 = CGFloat(engine.snake[i].x) * cell
-                let y0 = CGFloat(engine.snake[i].y) * cell
-                let p = cell * 0.085
-                let body = CGRect(x: x0 + p, y: y0 + p, width: cell - p * 2, height: cell - p * 2)
-                fillRoundRect(ctx, body, cell * 0.27, col)
-                fillRoundRect(ctx,
-                              CGRect(x: x0 + p + cell * 0.10, y: y0 + p + cell * 0.07,
-                                     width: cell * 0.22, height: cell * 0.13),
-                              cell * 0.06,
-                              UIColor(hex: 0xBEF0FF, alpha: 0.06 + CGFloat(ratio) * 0.13 + CGFloat(flow) * 0.05))
-                strokeRoundRect(ctx, body, cell * 0.27,
-                                UIColor(hex: 0x78DCFF, alpha: 0.10 + CGFloat(ratio) * 0.18), 1)
+        // Eat feedback: expanding gold ring + rising "+1"
+        for fx in s.eatFx {
+            let k = CGFloat(fx.age / EatFx.life)
+            let c = center(fx.cell)
+            strokeCircle(ctx, c, cell * (0.45 + 0.9 * k), p.food.alpha(0.7 * (1 - k)), max(1.5, cell * 0.08))
+            drawCentered("+1", at: CGPoint(x: c.x + cell * 0.55, y: c.y - cell * (0.8 + 0.9 * k)),
+                         font: roundedFont(max(11, cell * 0.8), .heavy), color: p.food.alpha(1 - k))
+        }
+
+        // Snake: one continuous tube, thin/dark tail -> thick/bright head
+        let n = s.snake.count
+        if n > 0 {
+            let head = s.snake[0], hc = center(head)
+            if !s.dead {
+                radialFill(ctx, center: hc, r0: 0, r1: cell * 1.1,
+                           stops: [(0, p.snakeHead.alpha(p.isDark ? 0.40 : 0.22)), (1, p.snakeHead.alpha(0))],
+                           rect: CGRect(x: hc.x - cell * 1.1, y: hc.y - cell * 1.1,
+                                        width: cell * 2.2, height: cell * 2.2))
+            }
+            ctx.setLineCap(.round)
+            let last = CGFloat(max(1, n - 1))
+            if n > 1 {
+                for i in stride(from: n - 1, through: 1, by: -1) {
+                    let k = 1 - CGFloat(i) / last
+                    let col = s.dead ? UIColor.mix(p.deadTail, p.danger, k * 0.9)
+                                     : UIColor.mix(p.snakeTail, p.snakeHead, pow(k, 0.85))
+                    ctx.setStrokeColor(col.cgColor)
+                    ctx.setLineWidth(cell * (0.46 + 0.26 * k))
+                    ctx.beginPath()
+                    ctx.move(to: center(s.snake[i]))
+                    ctx.addLine(to: center(s.snake[i - 1]))
+                    ctx.strokePath()
+                }
+                // Spine highlight along the front 60%
+                let front = min(n - 1, Int((Double(n) * 0.6).rounded()))
+                if front >= 1 {
+                    ctx.setLineWidth(cell * 0.1)
+                    for i in stride(from: front, through: 1, by: -1) {
+                        let k = 1 - CGFloat(i) / last
+                        ctx.setStrokeColor(p.spine.alpha(k * (p.isDark ? 0.16 : 0.26)).cgColor)
+                        ctx.beginPath()
+                        ctx.move(to: center(s.snake[i]))
+                        ctx.addLine(to: center(s.snake[i - 1]))
+                        ctx.strokePath()
+                    }
+                }
+            }
+            // Head with two eyes looking forward
+            fillCircle(ctx, hc, cell * 0.42, s.dead ? p.danger : p.snakeHead)
+            let neck = n > 1 ? s.snake[1] : GridPoint(x: head.x - 1, y: head.y)
+            let dx = CGFloat(head.x - neck.x), dy = CGFloat(head.y - neck.y)
+            let ex = -dy, ey = dx
+            for side in [-1.0, 1.0] as [CGFloat] {
+                let eye = CGPoint(x: hc.x + dx * cell * 0.12 + ex * side * cell * 0.18,
+                                  y: hc.y + dy * cell * 0.12 + ey * side * cell * 0.18)
+                fillCircle(ctx, eye, cell * 0.11, .white)
+                fillCircle(ctx, CGPoint(x: eye.x + dx * cell * 0.04, y: eye.y + dy * cell * 0.04),
+                           cell * 0.055, p.pupil)
             }
         }
 
-        // Snake head: glowing core + forward scanning bar
-        let h = engine.snake[0]
-        let pad = cell * 0.07
-        let hx = CGFloat(h.x) * cell + pad, hy = CGFloat(h.y) * cell + pad
-        let hs = cell - pad * 2
-        let hc = (CGFloat(h.x) + 0.5) * cell, hcY = (CGFloat(h.y) + 0.5) * cell
-        ctx.saveGState()
-        radialFill(ctx, center: CGPoint(x: hc, y: hcY), r0: cell * 0.02, r1: cell * 0.48,
-                   stops: [(0, UIColor(hex: 0x7DF3FF, alpha: 0.32)),
-                           (1, UIColor(hex: 0x7DF3FF, alpha: 0))],
-                   rect: CGRect(x: CGFloat(h.x) * cell, y: CGFloat(h.y) * cell,
-                                width: cell, height: cell))
-        let headRect = CGRect(x: hx, y: hy, width: hs, height: hs)
-        fillRoundRect(ctx, headRect, cell * 0.28, UIColor(hex: 0x0C3358))
-        strokeRoundRect(ctx, headRect, cell * 0.28, UIColor(hex: 0x8DF6FF), 1.6)
-        let neck = engine.snake.count > 1 ? engine.snake[1] : GridPoint(x: h.x - 1, y: h.y)
-        let fx = CGFloat(h.x - neck.x), fy = CGFloat(h.y - neck.y)
-        let ex: CGFloat = fx != 0 ? -fy : 0
-        let ey: CGFloat = fy != 0 ? -fx : 0
-        ctx.setStrokeColor(UIColor(hex: 0x7DF3FF, alpha: 0.85).cgColor)
-        ctx.setLineWidth(1.6)
-        ctx.beginPath()
-        ctx.move(to: CGPoint(x: hc + fx * cell * 0.30 + ex * cell * 0.16,
-                             y: hcY + fy * cell * 0.30 + ey * cell * 0.16))
-        ctx.addLine(to: CGPoint(x: hc + fx * cell * 0.30 - ex * cell * 0.16,
-                                y: hcY + fy * cell * 0.30 - ey * cell * 0.16))
-        ctx.strokePath()
-        for s in [-1, 1] {
-            fillCircle(ctx,
-                       CGPoint(x: hc + fx * cell * 0.06 + ex * CGFloat(s) * cell * 0.16,
-                               y: hcY + fy * cell * 0.06 + ey * CGFloat(s) * cell * 0.16),
-                       cell * 0.075, UIColor(hex: 0xDDFBFF))
+        // Dash afterimages
+        if let d = s.dashFx {
+            let fade = 1 - CGFloat(d.age / DashFx.life)
+            for j in 0..<d.steps {
+                let g = GridPoint(x: d.origin.x + d.dir.x * j, y: d.origin.y + d.dir.y * j)
+                let q = CGFloat(j + 1) / CGFloat(d.steps + 1)
+                fillCircle(ctx, center(g), cell * 0.26 * (0.6 + 0.4 * q), p.player.alpha(0.5 * q * fade))
+            }
         }
-        ctx.restoreGState()
 
-        // Player: rotating dashed ring + solid core + direction pointer
-        let px = (CGFloat(engine.player.x) + 0.5) * cell
-        let py = (CGFloat(engine.player.y) + 0.5) * cell
-        radialFill(ctx, center: CGPoint(x: px, y: py), r0: cell * 0.04, r1: cell * 0.48,
-                   stops: [(0, UIColor(hex: 0xFF9A4D, alpha: 0.42)),
-                           (1, UIColor(hex: 0xFF9A4D, alpha: 0))],
-                   rect: CGRect(x: px - cell * 0.5, y: py - cell * 0.5,
-                                width: cell, height: cell))
-        inCellRing(ctx, cx: px, cy: py,
-                   color: UIColor(hex: 0xFFBE82, alpha: 0.85),
-                   phase: -t / 1100, cell: cell)
-        fillCircle(ctx, CGPoint(x: px, y: py), cell * 0.27, UIColor(hex: 0xFF9A4D))
-        fillCircle(ctx, CGPoint(x: px, y: py), cell * 0.12, .white)
-        if engine.dir.x != 0 || engine.dir.y != 0 {
-            let a = atan2(CGFloat(engine.dir.y), CGFloat(engine.dir.x))
-            let tipX = px + cos(a) * cell * 0.44, tipY = py + sin(a) * cell * 0.44
-            ctx.setStrokeColor(UIColor(hex: 0xFFE1C3, alpha: 0.95).cgColor)
-            ctx.setLineWidth(1.5)
+        // Player: glow + cooldown ring + core + highlight
+        let pc = center(s.player)
+        let tint = s.dead ? p.danger : p.player
+        radialFill(ctx, center: pc, r0: 0, r1: cell * 0.95,
+                   stops: [(0, tint.alpha(p.isDark ? 0.5 : 0.32)), (1, tint.alpha(0))],
+                   rect: CGRect(x: pc.x - cell, y: pc.y - cell, width: cell * 2, height: cell * 2))
+        let rr = cell * 0.46, lw = max(1.4, cell * 0.07)
+        if s.dashCharge < 1 && !s.dead {
+            strokeCircle(ctx, pc, rr, tint.alpha(0.22), lw)
+            ctx.setStrokeColor(tint.cgColor)
+            ctx.setLineWidth(lw)
+            ctx.setLineCap(.round)
             ctx.beginPath()
-            ctx.move(to: CGPoint(x: px + cos(a) * cell * 0.30, y: py + sin(a) * cell * 0.30))
-            ctx.addLine(to: CGPoint(x: tipX, y: tipY))
+            ctx.addArc(center: pc, radius: rr, startAngle: -.pi / 2,
+                       endAngle: -.pi / 2 + 2 * .pi * s.dashCharge, clockwise: false)
             ctx.strokePath()
-            fillCircle(ctx, CGPoint(x: tipX, y: tipY), cell * 0.04, .white)
+        } else {
+            strokeCircle(ctx, pc, rr, tint.alpha(0.9), lw)
         }
+        fillCircle(ctx, pc, cell * 0.29, tint)
+        fillCircle(ctx, CGPoint(x: pc.x - cell * 0.08, y: pc.y - cell * 0.08), cell * 0.1,
+                   s.dead ? UIColor.mix(p.danger, .white, 0.5) : p.playerHi)
 
         // Particles
-        for p in engine.particles {
-            ctx.setAlpha(max(0, min(1, p.life)))
-            fillCircle(ctx, CGPoint(x: p.x, y: p.y), cell * 0.085, p.color)
+        for pt in s.particles {
+            let c: UIColor
+            switch pt.kind {
+            case .food: c = p.food
+            case .danger: c = p.danger
+            case .player: c = p.player
+            case .snake: c = p.snakeHead
+            }
+            fillCircle(ctx, CGPoint(x: pt.x, y: pt.y), cell * 0.085, c.alpha(max(0, min(1, pt.life))))
         }
-        ctx.setAlpha(1)
 
-        if engine.flash > 0 {
-            ctx.setFillColor(UIColor(hex: 0x3DFFC0, alpha: engine.flash * 0.075).cgColor)
+        // Threat: red breathing vignette
+        if s.threat > 0 {
+            radialFill(ctx, center: CGPoint(x: W / 2, y: H / 2),
+                       r0: max(W, H) * 0.30, r1: hypot(W, H) * 0.56,
+                       stops: [(0, p.danger.alpha(0)), (1, p.danger.alpha(0.5 * s.threat))], rect: board)
+        }
+
+        if s.flash > 0 {
+            ctx.setFillColor(p.food.alpha(s.flash * 0.06).cgColor)
             ctx.fill(board)
         }
 
-        // Countdown overlay
-        if engine.phase == .countdown {
-            ctx.setFillColor(UIColor(hex: 0x050A14, alpha: 0.62).cgColor)
+        // Countdown
+        if let cd = s.countdown {
+            ctx.setFillColor(p.scrim.cgColor)
             ctx.fill(board)
-            let n = Int(ceil(engine.countdown / 1000))
+            let n = Int(ceil(cd / 1000))
             let big = n > 0 ? String(n) : L10n.s(L10n.K.boardGo)
-            let bigFont = UIFont.systemFont(ofSize: round(cell * 4), weight: .heavy)
-            let bigSize = textSize(big, bigFont)
-            ctx.saveGState()
-            ctx.setShadow(offset: .zero, blur: cell * 1.2, color: UIColor(hex: 0x42CBFF).cgColor)
-            drawText(big,
-                     at: CGPoint(x: W / 2 - bigSize.width / 2,
-                                 y: H / 2 - cell * 0.4 - bigSize.height / 2),
-                     font: bigFont, color: UIColor(hex: 0xEAF6FF))
-            ctx.restoreGState()
-            let subFont = UIFont.systemFont(ofSize: max(9, round(cell * 0.85)), weight: .semibold)
-            let sub = L10n.s(L10n.K.boardCountdownHint)
-            let subSize = textSize(sub, subFont)
-            drawText(sub,
-                     at: CGPoint(x: W / 2 - subSize.width / 2,
-                                 y: H / 2 + cell * 1.9 - subSize.height / 2),
-                     font: subFont, color: UIColor(hex: 0xA0C3EB, alpha: 0.85))
+            let bigSize = min(cell * 6.5, min(W, H) * 0.42)
+            let mid = CGPoint(x: W / 2, y: H / 2 - bigSize * 0.18)
+            drawCentered(big, at: mid, font: roundedFont(bigSize, .heavy), color: p.text)
+            let hintFont = UIFont.systemFont(ofSize: max(12, min(16, cell * 0.68)), weight: .semibold)
+            let hintY = mid.y + bigSize * 0.62
+            drawCentered(L10n.s(L10n.K.boardCountdownHint), at: CGPoint(x: W / 2, y: hintY),
+                         font: hintFont, color: p.text2)
+            // Progress dots: active one is a capsule
+            let step = max(0, min(2, 3 - n))
+            let h = max(6, cell * 0.32), on = h * 2.8, gap = h * 0.8
+            let total = on + h * 2 + gap * 2
+            var x = W / 2 - total / 2
+            let y = hintY + max(22, cell * 1.2)
+            for i in 0..<3 {
+                let w = i == step ? on : h
+                fillRoundRect(ctx, CGRect(x: x, y: y - h / 2, width: w, height: h), h / 2,
+                              i == step ? p.player : p.surface2)
+                x += w + gap
+            }
         }
     }
 }
@@ -397,11 +346,11 @@ final class GameBoardUIView: UIView {
 
     override func draw(_ rect: CGRect) {
         guard let ctx = UIGraphicsGetCurrentContext(), let engine else { return }
-        BoardRenderer.draw(ctx, engine: engine, cols: cols, rows: rows, cell: cell)
+        BoardRenderer.draw(ctx, scene: BoardScene(engine: engine, cols: cols, rows: rows, cell: cell),
+                           palette: Palette.resolve(traitCollection))
     }
 
-    // Swipe = turn (continuous, no lift needed); tap = dash. Mirrors
-    // touchstart / touchmove / touchend in the web version.
+    // Swipe = turn (continuous, no lift needed); tap = dash.
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let p = touches.first?.location(in: self) else { return }
         touchStart = p
@@ -429,7 +378,6 @@ final class GameBoardUIView: UIView {
         touchLast = nil
         touchMoved = false
     }
-
 }
 
 // MARK: - SwiftUI bridge
@@ -465,4 +413,71 @@ struct GameBoardView: UIViewRepresentable {
     static func dismantleUIView(_ view: GameBoardUIView, coordinator: ()) {
         view.stopLoop()
     }
+}
+
+// MARK: - Home preview: a static demo chase with a breathing seed
+
+final class PreviewBoardUIView: UIView {
+    private var link: CADisplayLink?
+    private var start: CFTimeInterval = 0
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        backgroundColor = .clear
+        isOpaque = false
+        isUserInteractionEnabled = false
+        contentMode = .redraw
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        if window != nil {
+            guard link == nil else { return }
+            let l = CADisplayLink(target: self, selector: #selector(step))
+            l.preferredFrameRateRange = CAFrameRateRange(minimum: 20, maximum: 30, preferred: 30)
+            l.add(to: .main, forMode: .common)
+            link = l
+        } else {
+            link?.invalidate()
+            link = nil
+        }
+    }
+
+    @objc private func step() { setNeedsDisplay() }
+
+    override func draw(_ rect: CGRect) {
+        guard let ctx = UIGraphicsGetCurrentContext(), bounds.width > 40, bounds.height > 40 else { return }
+        let p = Palette.resolve(traitCollection)
+        let cols = bounds.width > bounds.height * 1.2 ? 18 : 14
+        let cell = floor(bounds.width / CGFloat(cols))
+        let rows = max(7, Int(bounds.height / cell))
+        if start == 0 { start = CACurrentMediaTime() }
+        let t = (CACurrentMediaTime() - start) * 1000
+
+        // Demo chase: snake winds up from the bottom-left towards the player.
+        let u = max(1, (rows - 4) / 3)
+        var g = GridPoint(x: 1, y: rows - 2)
+        var cells = [g]
+        for (dx, dy, n) in [(1, 0, cols / 2 - 1), (0, -1, u), (1, 0, 3), (0, -1, max(1, u - 1))] {
+            for _ in 0..<n { g = GridPoint(x: g.x + dx, y: g.y + dy); cells.append(g) }
+        }
+        let head = cells.last!
+        let scene = BoardScene(cols: cols, rows: rows, cell: cell, time: t,
+                               snake: cells.reversed(),
+                               player: GridPoint(x: min(cols - 2, head.x + 2), y: max(1, head.y - 1)),
+                               food: GridPoint(x: 2, y: 2),
+                               dashCharge: 1)
+        ctx.setFillColor(p.board.cgColor)
+        ctx.fill(bounds)
+        let ox = floor((bounds.width - CGFloat(cols) * cell) / 2)
+        ctx.translateBy(x: ox, y: 0)
+        BoardRenderer.draw(ctx, scene: scene, palette: p)
+    }
+}
+
+struct BoardPreview: UIViewRepresentable {
+    func makeUIView(context: Context) -> PreviewBoardUIView { PreviewBoardUIView() }
+    func updateUIView(_ view: PreviewBoardUIView, context: Context) { view.setNeedsDisplay() }
 }

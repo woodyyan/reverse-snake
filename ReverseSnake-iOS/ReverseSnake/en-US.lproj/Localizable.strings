@@ -1,66 +1,66 @@
 /* Snake Feast — English (United States). Content matches en.lproj. */
 
-/* Top bar — VoiceOver labels */
+/* Controls */
 "control.pause" = "Pause";
 "control.resume" = "Resume";
-"control.sound.on" = "Sound on";
-"control.sound.off" = "Sound off";
+"control.sound.on" = "Sound On";
+"control.sound.off" = "Sound Off";
 "control.restart" = "Restart";
 
-/* HUD — primary labels + short secondary descriptors */
-"hud.score" = "SCORE";
-"hud.best" = "BEST";
-"hud.length" = "LENGTH";
-"hud.space" = "SPACE";
-"hud.threat" = "THREAT";
-"hud.sub.score" = "PTS";
-"hud.sub.best" = "REC";
-"hud.sub.length" = "SEG";
-"hud.sub.space" = "ROOM";
-"hud.sub.threat" = "LVL";
+/* HUD */
+"hud.score" = "Score";
+"hud.best" = "Best";
+"hud.length" = "Length";
+"hud.space" = "Space";
+"hud.threat" = "Threat";
+"hud.state.ready" = "Standby";
+"hud.state.countdown" = "Get Ready";
+"hud.state.running" = "Live";
+"hud.state.paused" = "Paused";
+"hud.state.over" = "Game Over";
+"hud.dash.ready" = "Ready";
 
-/* HUD — state lamp */
-"hud.state.ready" = "STANDBY";
-"hud.state.countdown" = "GET READY";
-"hud.state.running" = "LIVE";
-"hud.state.paused" = "PAUSED";
-"hud.state.over" = "GAME OVER";
-"hud.dash.ready" = "READY";
-
-/* Core Graphics board overlay */
-"board.grid" = "GRID %1$dx%2$d  //  SECTOR 07";
+/* Board */
 "board.go" = "GO";
-"board.countdown.hint" = "Swipe now to pick an escape direction";
+"board.countdown.hint" = "Swipe now to pick your escape";
 
-/* Panels */
-"panel.badge.ready" = "MISSION // BRIEFING";
-"panel.badge.paused" = "SYSTEM // PAUSED";
-"panel.badge.over" = "RUN // TERMINATED";
+/* Home */
+"home.tagline" = "Reverse snake · you're the prey";
 "panel.ready.title" = "You're the one being hunted";
-"panel.ready.body" = "Dodge the snake. Collect cyan crystals.\nEach crystal: +2 segments, faster snake.\nTouch the snake: game over. Walls only block.";
-"panel.hint.swipe.title" = "Swipe to turn";
-"panel.hint.swipe.detail" = "SWIPE / TURN";
-"panel.hint.dash.title" = "Tap to dash";
-"panel.hint.dash.detail" = "TAP / DASH · 2.6s";
+"panel.ready.body" = "Swipe to turn, tap to dash.\nEvery golden seed: +2 segments, faster snake.";
+"legend.you" = "You";
+"legend.you.sub" = "Stay alive";
+"legend.seed" = "Seed";
+"legend.seed.sub" = "+1 point";
+"legend.snake" = "Snake";
+"legend.snake.sub" = "Don't touch";
 "panel.start" = "Start Game";
+"home.leaderboard" = "Leaderboard";
+"home.best" = "Best %ld";
+
+/* Pause */
 "panel.paused.title" = "Paused";
 "panel.paused.body" = "The snake is waiting right there.";
 "panel.resume" = "Resume";
-"panel.over.title" = "Run Over";
-"panel.score" = "SCORE";
+"pause.restart" = "Restart";
+"setting.sound" = "Sound";
+"setting.appearance" = "Appearance";
+"appearance.system" = "Auto";
+"appearance.light" = "Light";
+"appearance.dark" = "Dark";
+
+/* Results */
 "panel.replay" = "Play Again";
+"over.home" = "Home";
 "panel.over.hit" = "You ran into the snake";
 "panel.over.caught" = "The snake caught you";
 
-/* Leaderboard (Game Center) */
-"lb.open" = "Leaderboard";
-"lb.view" = "View Leaderboard";
-"lb.badge" = "RANKING // LIVE";
-"lb.title" = "Global Leaderboard";
+/* Leaderboard */
+"lb.title" = "Leaderboard";
 "lb.tab.global" = "Global";
 "lb.tab.friends" = "Friends";
 "lb.tab.weekly" = "This Week";
-"lb.me" = "YOU";
+"lb.me" = "You";
 "lb.unranked" = "Not ranked yet";
 "lb.empty" = "No scores yet — take the #1 spot";
 "lb.empty.friends" = "No friend scores yet — challenge them";
@@ -74,10 +74,10 @@
 "lb.open.system" = "Open in Game Center";
 "lb.close" = "Close";
 
-/* Game-over rank strip */
+/* Rank strip */
 "rank.global" = "Global #%ld";
 "rank.friends" = "Friends #%ld";
-"rank.new.best" = "NEW BEST";
+"rank.new.best" = "New Best";
 "rank.submitting" = "Submitting score…";
 "rank.synced" = "Score synced to Game Center";
 "rank.login" = "Sign in to Game Center to get ranked";

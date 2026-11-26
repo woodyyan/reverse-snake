@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<title>Snake Feast · UI 重设计提案 v2</title>
+<style>
+:root{--bg:#FAFAFA;--card:#fff;--ink:#111827;--ink2:#5B6577;--ink3:#9AA3B2;--line:#E7EAF0;--blue:#1D4ED8;
+--r:"SF Pro Rounded","SF Compact Rounded",-apple-system,"PingFang SC",sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"SF Pro Display","PingFang SC",sans-serif;-webkit-font-smoothing:antialiased;width:1440px}
+section{padding:72px 80px;border-bottom:1px solid var(--line)}
+.kicker{font-size:13px;font-weight:700;letter-spacing:.14em;color:var(--blue);text-transform:uppercase;margin-bottom:12px}
+h1{font-size:56px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+h2{font-size:36px;font-weight:800;letter-spacing:-.015em;margin-bottom:10px}
+.lead{font-size:19px;color:var(--ink2);line-height:1.6;max-width:980px}
+.row{display:flex;gap:32px;align-items:flex-start}
+.card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:28px}
+.cap{font-size:15px;font-weight:700;margin-top:16px;text-align:center}
+.sub{font-size:13px;color:var(--ink2);text-align:center;margin-top:4px;line-height:1.5}
+.tag{display:inline-block;font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px;background:#EEF2FF;color:var(--blue)}
+.tag.rec{background:#1D4ED8;color:#fff}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:14px 16px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.5}
+th{font-size:12px;letter-spacing:.08em;color:var(--ink3);font-weight:700}
+/* ---------- phone ---------- */
+.phone{width:413px;height:872px;border-radius:64px;background:#1B1C1F;padding:10px;box-shadow:0 30px 60px -20px rgba(15,23,42,.35),0 0 0 1px #2c2d31 inset;flex:none}
+.scr{position:relative;width:393px;height:852px;border-radius:54px;overflow:hidden}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:124px;height:36px;background:#000;border-radius:20px;z-index:20}
+.sb{position:absolute;top:0;left:0;right:0;height:54px;display:flex;justify-content:space-between;align-items:center;padding:6px 34px 0 44px;font-weight:600;font-size:17px;z-index:19}
+.sb i{font-style:normal;font-size:13px;letter-spacing:1px}
+.homebar{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:140px;height:5px;border-radius:3px;z-index:20}
+.num{font-family:var(--r);font-variant-numeric:tabular-nums;font-weight:800}
+.topbar{position:absolute;top:56px;left:12px;right:12px;height:60px;display:flex;align-items:center;justify-content:space-between}
+.ib{width:42px;height:42px;border-radius:21px;display:flex;align-items:center;justify-content:center}
+.stats{position:absolute;top:120px;left:12px;right:12px;height:30px;display:flex;gap:8px}
+.chip{flex:1;border-radius:10px;display:flex;align-items:center;gap:7px;padding:0 10px;font-size:12px;white-space:nowrap}
+.s3 .pw{width:372px;height:785px}.s3 .pw>div{transform:scale(.9);transform-origin:top left}
+.chip b{font-family:var(--r);font-size:14px;font-variant-numeric:tabular-nums;margin-left:auto}
+.bar{height:4px;border-radius:2px;width:30px;overflow:hidden}
+.bar>span{display:block;height:100%;border-radius:2px}
+.boardwrap{position:absolute;left:12px;top:160px;width:369px;border-radius:22px;overflow:hidden}
+.btn{height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;gap:8px}
+.sheet{position:absolute;left:0;right:0;bottom:0;border-radius:32px 32px 0 0;padding:14px 22px 40px}
+.grab{width:38px;height:5px;border-radius:3px;margin:0 auto 18px}
+.sw{width:100%;height:84px;border-radius:14px;margin-bottom:10px;position:relative}
+.sw span{position:absolute;left:12px;bottom:10px;font-size:12px;font-weight:700}
+.swl{font-size:13px;line-height:1.5}
+.swl b{display:block;font-size:14px}
+.swl code{font-family:ui-monospace,Menlo;color:var(--ink2);font-size:12px}
+.ico{border-radius:22.37%;overflow:hidden;flex:none}
+.legend-dot{display:inline-block;width:10px;height:10px;border-radius:5px;vertical-align:middle;margin-right:6px}
+.cmp td:first-child{font-weight:700;width:150px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:6px 12px;border-radius:99px}
+</style></head><body>
+<div id="app"></div>
+<svg id="measure" width="0" height="0" style="position:absolute"><path id="mp"/></svg>
+<script>
+/* ================= Themes ================= */
+const A={key:'A',name:'夜行 Nocturne',dark:true,bg:'#07090E',surf:'#11151E',surf2:'#1A1F2B',hair:'rgba(255,255,255,.07)',text:'#F3F5F9',text2:'#8C95A8',text3:'#596275',
+ board:'#0B0E15',board2:'#0E121B',dot:'rgba(255,255,255,.075)',tail:'#0F2C45',head:'#5CC8FF',headHi:'#9BE0FF',player:'#FF7A2F',playerHi:'#FFC08F',food:'#FFC83D',foodHi:'#FFF0B8',danger:'#FF4D5E',
+ primary:'#FF7A2F',onPrimary:'#1A0B02',gold:'#FFC83D',silver:'#C9D3E3',bronze:'#D9935B',iconBg1:'#1A2130',iconBg2:'#06080D'};
+const B={key:'B',name:'晨纸 Daylight',dark:false,bg:'#F3EFE6',surf:'#FFFFFF',surf2:'#EAE4D7',hair:'rgba(40,30,10,.08)',text:'#1E1B16',text2:'#7A7264',text3:'#A69E8F',
+ board:'#E9E2D3',board2:'#E4DCCB',dot:'rgba(60,45,20,.16)',tail:'#B9D6C3',head:'#1F6B52',headHi:'#3E9474',player:'#FF5A47',playerHi:'#FFB2A8',food:'#E9A410',foodHi:'#FFE3A0',danger:'#E5484D',
+ primary:'#1E1B16',onPrimary:'#FFFFFF',gold:'#E9A410',silver:'#B8B2A6',bronze:'#C88A5A',iconBg1:'#F7F3EA',iconBg2:'#E8E0CF'};
+const C={key:'C',name:'脉冲 Pulse',dark:true,bg:'#0A0613',surf:'#150E24',surf2:'#1F1533',hair:'rgba(255,255,255,.08)',text:'#F7F2FF',text2:'#A493C4',text3:'#6C5D8A',
+ board:'#0E0819',board2:'#120A20',dot:'rgba(255,46,136,.16)',tail:'#3A0D33',head:'#FF2E88',headHi:'#FF8CC0',player:'#C6FF3D',playerHi:'#EFFFB8',food:'#2EE6FF',foodHi:'#C8F8FF',danger:'#FF3B3B',
+ primary:'#C6FF3D',onPrimary:'#0A0613',gold:'#FFD23D',silver:'#C9C3E0',bronze:'#E0955B',iconBg1:'#1C1030',iconBg2:'#07040E'};
+
+/* ================= helpers ================= */
+const hx=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const lerp=(a,b,t)=>{const x=hx(a),y=hx(b);return 'rgb('+x.map((v,i)=>Math.round(v+(y[i]-v)*t)).join(',')+')'};
+const D={U:[0,-1],D:[0,1],L:[-1,0],R:[1,0]};
+function snakeFrom(start,moves){const c=[[...start]];let [x,y]=start;for(const [d,n] of moves){for(let i=0;i<n;i++){x+=D[d][0];y+=D[d][1];c.push([x,y])}}return c.reverse();}
+let uid=0;
+function sfx(){return 'g'+(++uid)}
+
+/* ================= Board renderer ================= */
+function board(o){
+ const T=o.T,cols=o.cols,rows=o.rows,cell=o.cell,W=cols*cell,H=rows*cell,id=sfx();
+ const cc=([x,y])=>[(x+.5)*cell,(y+.5)*cell];
+ let s='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" style="display:block">';
+ s+='<defs><radialGradient id="bg'+id+'" cx="50%" cy="40%" r="75%"><stop offset="0" stop-color="'+T.board2+'"/><stop offset="1" stop-color="'+T.board+'"/></radialGradient>'+
+  '<radialGradient id="pg'+id+'"><stop offset="0" stop-color="'+T.player+'" stop-opacity=".55"/><stop offset="1" stop-color="'+T.player+'" stop-opacity="0"/></radialGradient>'+
+  '<radialGradient id="fg'+id+'"><stop offset="0" stop-color="'+T.food+'" stop-opacity=".5"/><stop offset="1" stop-color="'+T.food+'" stop-opacity="0"/></radialGradient>'+
+  '<radialGradient id="vg'+id+'" cx="50%" cy="50%" r="72%"><stop offset=".55" stop-color="'+T.danger+'" stop-opacity="0"/><stop offset="1" stop-color="'+T.danger+'" stop-opacity=".55"/></radialGradient>'+
+  '<radialGradient id="hg'+id+'"><stop offset="0" stop-color="'+T.head+'" stop-opacity=".45"/><stop offset="1" stop-color="'+T.head+'" stop-opacity="0"/></radialGradient></defs>';
+ s+='<rect width="'+W+'" height="'+H+'" fill="url(#bg'+id+')"/>';
+ if(o.grid!==false){for(let x=1;x<cols;x++)for(let y=1;y<rows;y++)s+='<circle cx="'+x*cell+'" cy="'+y*cell+'" r="'+cell*.055+'" fill="'+T.dot+'"/>';}
+ // food
+ if(o.food){const [fx,fy]=cc(o.food),k=cell*.24;
+  s+='<circle cx="'+fx+'" cy="'+fy+'" r="'+cell*.75+'" fill="url(#fg'+id+')"/>';
+  s+='<g transform="translate('+fx+','+fy+') rotate(45)"><rect x="'+-k+'" y="'+-k+'" width="'+2*k+'" height="'+2*k+'" rx="'+k*.32+'" fill="'+T.food+'"/>'+
+   '<rect x="'+-k*.55+'" y="'+-k*.55+'" width="'+k*.5+'" height="'+k*.5+'" rx="'+k*.14+'" fill="'+T.foodHi+'" opacity=".9"/></g>';
+  if(o.eat){s+='<circle cx="'+fx+'" cy="'+fy+'" r="'+cell*.85+'" fill="none" stroke="'+T.food+'" stroke-width="2" opacity=".7"/><circle cx="'+fx+'" cy="'+fy+'" r="'+cell*1.3+'" fill="none" stroke="'+T.food+'" stroke-width="1" opacity=".3"/>';
+   for(let i=0;i<8;i++){const a=i*Math.PI/4+.3,r=cell*(1.05+(i%2)*.3);s+='<circle cx="'+(fx+Math.cos(a)*r)+'" cy="'+(fy+Math.sin(a)*r)+'" r="'+cell*.07+'" fill="'+T.food+'"/>'}
+   s+='<text x="'+(fx+cell*.6)+'" y="'+(fy-cell*.9)+'" font-family="SF Pro Rounded,-apple-system" font-weight="800" font-size="'+cell*.8+'" fill="'+T.food+'">+1</text>';}
+ }
+ // snake
+ const sn=o.snake;if(sn){const n=sn.length,dead=o.dead;
+  const hc=cc(sn[0]);s+='<circle cx="'+hc[0]+'" cy="'+hc[1]+'" r="'+cell*1.1+'" fill="url(#hg'+id+')" opacity="'+(dead?0:1)+'"/>';
+  for(let i=n-1;i>=1;i--){const t=1-i/(n-1),a=cc(sn[i]),b=cc(sn[i-1]);
+   const col=dead?lerp('#3A1018',T.danger,t*.9):lerp(T.tail,T.head,Math.pow(t,.85));
+   s+='<line x1="'+a[0]+'" y1="'+a[1]+'" x2="'+b[0]+'" y2="'+b[1]+'" stroke="'+col+'" stroke-width="'+cell*(.46+.26*t)+'" stroke-linecap="round"/>';}
+  // spine highlight
+  for(let i=Math.min(n-1,Math.round(n*.6));i>=1;i--){const t=1-i/(n-1),a=cc(sn[i]),b=cc(sn[i-1]);
+   s+='<line x1="'+a[0]+'" y1="'+a[1]+'" x2="'+b[0]+'" y2="'+b[1]+'" stroke="#fff" stroke-opacity="'+(t*.16)+'" stroke-width="'+cell*.1+'" stroke-linecap="round"/>';}
+  const nb=sn[1],dx=sn[0][0]-nb[0],dy=sn[0][1]-nb[1];
+  s+='<circle cx="'+hc[0]+'" cy="'+hc[1]+'" r="'+cell*.42+'" fill="'+(dead?T.danger:T.head)+'"/>';
+  const ex=-dy,ey=dx;
+  for(const sg of[-1,1]){const x=hc[0]+dx*cell*.12+ex*sg*cell*.18,y=hc[1]+dy*cell*.12+ey*sg*cell*.18;
+   s+='<circle cx="'+x+'" cy="'+y+'" r="'+cell*.11+'" fill="#fff"/><circle cx="'+(x+dx*cell*.04)+'" cy="'+(y+dy*cell*.04)+'" r="'+cell*.055+'" fill="'+(T.dark?'#07090E':'#1E1B16')+'"/>';}
+ }
+ // player
+ if(o.player){const [px,py]=cc(o.player);
+  s+='<circle cx="'+px+'" cy="'+py+'" r="'+cell*.95+'" fill="url(#pg'+id+')"/>';
+  const rr=cell*.46;
+  if(o.cd!=null){const C2=2*Math.PI*rr;s+='<circle cx="'+px+'" cy="'+py+'" r="'+rr+'" fill="none" stroke="'+T.player+'" stroke-opacity=".22" stroke-width="'+cell*.07+'"/>'+
+   '<circle cx="'+px+'" cy="'+py+'" r="'+rr+'" fill="none" stroke="'+T.player+'" stroke-width="'+cell*.07+'" stroke-linecap="round" stroke-dasharray="'+C2*o.cd+' '+C2+'" transform="rotate(-90 '+px+' '+py+')"/>';}
+  else s+='<circle cx="'+px+'" cy="'+py+'" r="'+rr+'" fill="none" stroke="'+(o.dead?T.danger:T.player)+'" stroke-opacity=".9" stroke-width="'+cell*.07+'"/>';
+  s+='<circle cx="'+px+'" cy="'+py+'" r="'+cell*.29+'" fill="'+(o.dead?T.danger:T.player)+'"/><circle cx="'+(px-cell*.08)+'" cy="'+(py-cell*.08)+'" r="'+cell*.1+'" fill="'+T.playerHi+'"/>';
+  if(o.dash){const [ddx,ddy]=D[o.dash];for(let k=1;k<=2;k++){const q=1-k*.33;s+='<circle cx="'+(px-ddx*cell*k)+'" cy="'+(py-ddy*cell*k)+'" r="'+cell*.26*q+'" fill="'+T.player+'" opacity="'+(.45*q)+'"/>'}}
+ }
+ if(o.threat)s+='<rect width="'+W+'" height="'+H+'" fill="url(#vg'+id+')" opacity="'+o.threat+'"/>';
+ return s+'</svg>';
+}
+
+/* ================= Icons ================= */
+function samplePath(d,n){const p=document.getElementById('mp');p.setAttribute('d',d);const L=p.getTotalLength(),pts=[];for(let i=0;i<=n;i++){const q=p.getPointAtLength(L*i/n);pts.push([q.x,q.y])}return pts}
+function rpath(pts,r){let d='M'+pts[0];for(let i=1;i<pts.length-1;i++){const [a,b,c]=[pts[i-1],pts[i],pts[i+1]];
+ const u=[Math.sign(b[0]-a[0]),Math.sign(b[1]-a[1])],v=[Math.sign(c[0]-b[0]),Math.sign(c[1]-b[1])];
+ d+=' L'+(b[0]-u[0]*r)+','+(b[1]-u[1]*r)+' Q'+b+' '+(b[0]+v[0]*r)+','+(b[1]+v[1]*r);}return d+' L'+pts[pts.length-1];}
+function tube(pts,r,w0,w1,c0,c1,n=260,glow){const P=samplePath(rpath(pts,r),n);let s='';
+ if(glow)s+='<path d="'+rpath(pts,r)+'" fill="none" stroke="'+c1+'" stroke-opacity=".18" stroke-width="'+(w1*1.6)+'" stroke-linecap="round" stroke-linejoin="round" filter="url(#blur)"/>';
+ for(let i=0;i<n;i++){const t=i/n;s+='<line x1="'+P[i][0]+'" y1="'+P[i][1]+'" x2="'+P[i+1][0]+'" y2="'+P[i+1][1]+'" stroke="'+lerp(c0,c1,Math.pow(t,.9))+'" stroke-width="'+(w0+(w1-w0)*t)+'" stroke-linecap="round"/>';}return s}
+function orb(T,x,y,r,glow=true){return (glow?'<circle cx="'+x+'" cy="'+y+'" r="'+r*2.4+'" fill="url(#og)"/>':'')+'<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="url(#oc)"/>'}
+function icon(T,kind,size,mode){ // mode: undefined | 'dark' | 'tint'
+ const id=sfx();let T2=T;
+ if(mode==='tint'){T2={...T,iconBg1:'#1B1B1D',iconBg2:'#0A0A0B',tail:'#3A3A3E',head:'#E9E9EE',player:'#BDBDC4',playerHi:'#FFFFFF'}}
+ if(mode==='dark'&&!T.dark){T2={...T,iconBg1:'#1E1C18',iconBg2:'#0E0D0B',tail:'#2C4A3E',head:'#58C79B'}}
+ if(mode==='dark'&&T.dark){T2={...T,iconBg1:'#0D1118',iconBg2:'#000000'}}
+ let s='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="'+size+'" height="'+size+'" style="display:block"><defs>'+
+ '<linearGradient id="ib" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+T2.iconBg1+'"/><stop offset="1" stop-color="'+T2.iconBg2+'"/></linearGradient>'+
+ '<radialGradient id="og"><stop offset="0" stop-color="'+T2.player+'" stop-opacity=".45"/><stop offset="1" stop-color="'+T2.player+'" stop-opacity="0"/></radialGradient>'+
+ '<radialGradient id="oc" cx="38%" cy="35%" r="70%"><stop offset="0" stop-color="'+T2.playerHi+'"/><stop offset=".45" stop-color="'+T2.player+'"/><stop offset="1" stop-color="'+T2.player+'"/></radialGradient>'+
+ '<filter id="blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="22"/></filter></defs>'+
+ '<rect width="1024" height="1024" fill="url(#ib)"/>';
+ s=s.replace(/id="(ib|og|oc|blur)"/g,'id="$1'+id+'"').replace(/url\(#(ib|og|oc|blur)\)/g,'url(#$1'+id+')');
+ let body='';
+ if(kind==='I1'){ // Encircle
+  body+=tube([[300,800],[800,800],[800,224],[224,224],[224,520],[362,520]],120,58,140,T2.tail,T2.head,340,false);
+  body+=orb(T2,585,520,80);
+ }else if(kind==='I2'){ // Face-off
+  body+=tube([[-80,840],[300,840],[300,540]],170,120,200,T2.tail,T2.head,200,false);
+  body+='<rect x="190" y="400" width="250" height="250" rx="110" fill="'+T2.head+'"/>';
+  for(const y of[470,580]){body+='<circle cx="380" cy="'+y+'" r="34" fill="#fff"/><circle cx="392" cy="'+y+'" r="17" fill="'+(T.dark?'#07090E':'#1E1B16')+'"/>'}
+  body+=orb(T2,730,525,96);
+ }else{ // I3 S
+  body+=tube([[300,742],[660,742],[660,516],[350,516],[350,290],[566,290]],104,62,124,T2.tail,T2.head,300,false);
+  body+=orb(T2,742,290,78);
+ }
+ body=body.replace(/url\(#(og|oc|blur)\)/g,'url(#$1'+id+')');
+ return s+body+'</svg>';
+}
+
+/* ================= Phone chrome ================= */
+function phone(T,inner,{sbDark}={}){const light=sbDark??!T.dark;const c=light?'#111':'#fff';
+ return '<div class="phone"><div class="scr" style="background:'+T.bg+';color:'+T.text+'"><div class="island"></div>'+
+ '<div class="sb" style="color:'+c+'"><span>9:41</span><i>●●● ◠ ▬</i></div>'+inner+
+ '<div class="homebar" style="background:'+(light?'rgba(0,0,0,.85)':'rgba(255,255,255,.85)')+'"></div></div></div>';}
+const svgI={
+ pause:c=>'<svg width="16" height="16" viewBox="0 0 16 16"><rect x="3" y="2" width="3.6" height="12" rx="1.4" fill="'+c+'"/><rect x="9.4" y="2" width="3.6" height="12" rx="1.4" fill="'+c+'"/></svg>',
+ crown:c=>'<svg width="14" height="14" viewBox="0 0 16 16"><path d="M2 5l3 3 3-5 3 5 3-3-1.4 8H3.4z" fill="'+c+'"/></svg>',
+ trophy:c=>'<svg width="18" height="18" viewBox="0 0 20 20"><path d="M5 2h10v4a5 5 0 01-10 0zM5 3H2v2a3 3 0 003 3M15 3h3v2a3 3 0 01-3 3M10 11v4M6 18h8M7.5 15h5" fill="none" stroke="'+c+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ sound:c=>'<svg width="18" height="18" viewBox="0 0 20 20"><path d="M3 7.5h3l4-3.5v12l-4-3.5H3z" fill="'+c+'"/><path d="M13 7a4 4 0 010 6M15.5 4.5a7.5 7.5 0 010 11" fill="none" stroke="'+c+'" stroke-width="1.7" stroke-linecap="round"/></svg>',
+ help:c=>'<svg width="18" height="18" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="'+c+'" stroke-width="1.7"/><path d="M7.6 7.8a2.5 2.5 0 114 2c-.9.6-1.6 1-1.6 2.2" fill="none" stroke="'+c+'" stroke-width="1.7" stroke-linecap="round"/><circle cx="10" cy="14.6" r="1.1" fill="'+c+'"/></svg>',
+ play:c=>'<svg width="16" height="16" viewBox="0 0 16 16"><path d="M4 2.5v11l9.5-5.5z" fill="'+c+'"/></svg>',
+ restart:c=>'<svg width="18" height="18" viewBox="0 0 20 20"><path d="M4 10a6 6 0 106-6H6.5M8.5 1.5L6 4l2.5 2.5" fill="none" stroke="'+c+'" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ close:c=>'<svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="'+c+'" stroke-width="2" stroke-linecap="round"/></svg>',
+ chev:c=>'<svg width="8" height="12" viewBox="0 0 8 12"><path d="M2 1.5L6.5 6 2 10.5" fill="none" stroke="'+c+'" stroke-width="2" stroke-linecap="round"/></svg>',
+ globe:c=>'<svg width="14" height="14" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="'+c+'" stroke-width="1.5"/><path d="M1.8 8h12.4M8 1.7c-3 3.4-3 9.2 0 12.6M8 1.7c3 3.4 3 9.2 0 12.6" fill="none" stroke="'+c+'" stroke-width="1.3"/></svg>',
+};
+function topbar(T,score,best,{paused}={}){
+ return '<div class="topbar"><div class="ib" style="background:'+T.surf2+';border:1px solid '+T.hair+'">'+(paused?svgI.play(T.text):svgI.pause(T.text))+'</div>'+
+ '<div style="text-align:center"><div style="font-size:11px;font-weight:600;color:'+T.text2+';letter-spacing:.08em">得分</div><div class="num" style="font-size:38px;line-height:1;margin-top:2px">'+score+'</div></div>'+
+ '<div style="text-align:right;min-width:42px"><div style="font-size:11px;font-weight:600;color:'+T.text2+';display:flex;gap:4px;align-items:center;justify-content:flex-end">'+svgI.crown(T.gold)+'最高</div><div class="num" style="font-size:20px;margin-top:2px;color:'+T.text+'">'+best+'</div></div></div>';}
+function stats(T,len,space,threat){
+ const ch=(l,v,bar,col)=>'<div class="chip" style="background:'+T.surf+';border:1px solid '+T.hair+'"><span style="color:'+T.text2+'">'+l+'</span>'+(bar!=null?'<div class="bar" style="background:'+T.surf2+'"><span style="width:'+bar+'%;background:'+col+'"></span></div>':'')+'<b style="color:'+(col&&bar<30?col:T.text)+'">'+v+'</b></div>';
+ return '<div class="stats">'+ch('蛇长',len)+ch('空间',space+'%',space,space<30?T.danger:T.head)+ch('追击',threat+'%',threat,T.player)+'</div>';}
+const G={cols:16,rows:27,cell:23};
+const S1=snakeFrom([1,25],[['R',12],['U',4],['L',9],['U',5],['R',6],['U',3]]);
+function boardBox(T,o,extra=''){return '<div class="boardwrap" style="height:'+G.rows*G.cell+'px;box-shadow:0 0 0 1px '+T.hair+'">'+board({T,...G,...o})+extra+'</div>';}
+
+/* ---------- screens ---------- */
+function scrGame(T,o={}){return phone(T,topbar(T,o.score??17,o.best??42)+stats(T,o.len??39,o.space??58,o.threat??46)+
+ boardBox(T,{snake:o.snake??S1,player:o.player??[10,9],food:o.food??[3,5],cd:o.cd,dash:o.dash,threat:o.vig,eat:o.eat}));}
+function scrHome(T){
+ const HS=snakeFrom([1,10],[['R',6],['U',4],['R',4],['U',3]]);
+ const hb='<div style="position:absolute;left:12px;right:12px;top:150px;height:322px;border-radius:24px;overflow:hidden;box-shadow:0 0 0 1px '+T.hair+'">'+board({T,cols:16,rows:14,cell:23,snake:HS,player:[11,1],food:[3,4],cd:1})+
+  '<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 45%,'+T.bg+' 100%)"></div></div>';
+ const lg=(svg,t,d)=>'<div style="flex:1;display:flex;gap:10px;align-items:center;background:'+T.surf+';border:1px solid '+T.hair+';border-radius:14px;padding:10px 10px"><div style="width:26px;height:26px;flex:none">'+svg+'</div><div><div style="font-size:13px;font-weight:700">'+t+'</div><div style="font-size:11px;color:'+T.text2+'">'+d+'</div></div></div>';
+ const mini=(o)=>board({T,cols:1,rows:1,cell:26,grid:false,...o}).replace('fill="url(#bg','fill-opacity="0" fill="url(#bg');
+ return phone(T,
+ '<div style="position:absolute;top:66px;left:24px;right:24px;display:flex;align-items:center;gap:12px"><div class="ico" style="width:52px;height:52px;box-shadow:0 0 0 1px '+T.hair+'">'+icon(T,'I1',52)+'</div><div><div style="font-size:26px;font-weight:800;letter-spacing:-.02em">Snake Feast</div><div style="font-size:13px;color:'+T.text2+'">反向贪吃蛇 · 这次你是猎物</div></div></div>'+hb+
+ '<div style="position:absolute;left:24px;right:24px;top:452px">'+
+ '<div style="font-size:30px;font-weight:800;letter-spacing:-.02em">你是被追的那一个</div>'+
+ '<div style="font-size:15px;color:'+T.text2+';margin-top:8px;line-height:1.55">滑动转向，轻点冲刺。每吃 1 颗，蛇长 2 节、追得更快。</div>'+
+ '<div style="display:flex;gap:8px;margin-top:18px">'+lg(mini({player:[0,0],cd:1}),'你','橙色光点')+lg(mini({food:[0,0]}),'金种','+1 分')+
+   lg('<svg width="26" height="26" viewBox="0 0 26 26"><line x1="3" y1="13" x2="18" y2="13" stroke="'+T.tail+'" stroke-width="10" stroke-linecap="round"/><circle cx="18" cy="13" r="8" fill="'+T.head+'"/></svg>','蛇','碰到即输')+'</div>'+
+ '<div class="btn" style="margin-top:22px;background:'+T.primary+';color:'+T.onPrimary+'">'+svgI.play(T.onPrimary)+'开始游戏</div>'+
+ '<div style="display:flex;gap:8px;margin-top:10px">'+[['trophy','排行榜'],['sound','音效'],['help','玩法']].map(([k,t])=>'<div style="flex:1;height:46px;border-radius:14px;background:'+T.surf+';border:1px solid '+T.hair+';display:flex;align-items:center;justify-content:center;gap:7px;font-size:14px;font-weight:600">'+svgI[k](T.text2)+t+'</div>').join('')+'</div>'+
+ '<div style="text-align:center;font-size:12px;color:'+T.text3+';margin-top:16px">最高纪录 <b class="num" style="color:'+T.text2+'">42</b> · 全球 #1,284</div></div>');}
+function scrCountdown(T){return phone(T,topbar(T,0,42)+stats(T,5,100,0)+boardBox(T,{snake:snakeFrom([3,22],[['R',4]]),player:[8,12],food:[12,5],cd:1},
+ '<div style="position:absolute;inset:0;background:'+(T.dark?'rgba(5,7,12,.55)':'rgba(243,239,230,.6)')+';display:flex;flex-direction:column;align-items:center;justify-content:center"><div class="num" style="font-size:150px;line-height:1;color:'+T.text+'">3</div><div style="margin-top:10px;font-size:15px;font-weight:600;color:'+T.text2+'">先滑动，选好逃跑方向</div>'+
+ '<div style="margin-top:26px;display:flex;gap:6px">'+[1,0,0].map(a=>'<span style="width:'+(a?22:8)+'px;height:8px;border-radius:4px;background:'+(a?T.primary:T.surf2)+'"></span>').join('')+'</div></div>'));}
+function scrPause(T){
+ const bb=boardBox(T,{snake:S1,player:[10,9],food:[3,5],cd:.6}).replace('class="boardwrap" style="','class="boardwrap" style="filter:blur(6px) brightness(.6);');
+ const row=(ic,t,right)=>'<div style="display:flex;align-items:center;gap:12px;height:52px;padding:0 16px;border-radius:16px;background:'+T.surf2+';margin-top:8px">'+ic+'<span style="font-size:16px;font-weight:600">'+t+'</span><span style="margin-left:auto">'+right+'</span></div>';
+ const tog='<span style="display:inline-block;width:46px;height:28px;border-radius:14px;background:'+T.primary+';position:relative"><span style="position:absolute;right:2px;top:2px;width:24px;height:24px;border-radius:12px;background:#fff"></span></span>';
+ return phone(T,topbar(T,17,42,{paused:true})+stats(T,39,58,46)+bb+
+ '<div class="sheet" style="background:'+T.surf+';box-shadow:0 -20px 50px rgba(0,0,0,.35)"><div class="grab" style="background:'+T.surf2+'"></div>'+
+ '<div style="font-size:26px;font-weight:800">已暂停</div><div style="font-size:14px;color:'+T.text2+';margin-top:4px">蛇在原地等你。</div>'+
+ '<div class="btn" style="margin-top:20px;background:'+T.primary+';color:'+T.onPrimary+'">'+svgI.play(T.onPrimary)+'继续</div>'+
+ row(svgI.restart(T.text2),'重新开始',svgI.chev(T.text3))+row(svgI.sound(T.text2),'音效',tog)+row(svgI.trophy(T.text2),'排行榜',svgI.chev(T.text3))+'</div>');}
+function scrOver(T){
+ const DS=snakeFrom([1,25],[['R',12],['U',4],['L',9],['U',5],['R',6],['U',5]]);
+ const bb=boardBox(T,{snake:DS,player:[10,10],dead:true,food:[3,5]}).replace('class="boardwrap" style="','class="boardwrap" style="filter:brightness(.45);');
+ return phone(T,topbar(T,23,23)+stats(T,51,31,62)+bb+
+ '<div style="position:absolute;left:20px;right:20px;top:232px;background:'+T.surf+';border:1px solid '+T.hair+';border-radius:28px;padding:26px 22px 22px;text-align:center;box-shadow:0 30px 60px rgba(0,0,0,.45)">'+
+ '<span class="badge" style="background:'+T.danger+'22;color:'+T.danger+'">被蛇追上了</span>'+
+ '<div class="num" style="font-size:96px;line-height:1;margin-top:14px">23</div>'+
+ '<span class="badge" style="margin-top:10px;background:'+T.gold+';color:#2A1A00">'+svgI.crown('#2A1A00')+'新纪录</span>'+
+ '<div style="display:flex;margin-top:20px;border-top:1px solid '+T.hair+';border-bottom:1px solid '+T.hair+'">'+[['蛇长','51'],['最高','23'],['追击','62%']].map(([a,b],i)=>'<div style="flex:1;padding:14px 0;'+(i?'border-left:1px solid '+T.hair:'')+'"><div style="font-size:12px;color:'+T.text2+'">'+a+'</div><div class="num" style="font-size:22px;margin-top:2px">'+b+'</div></div>').join('')+'</div>'+
+ '<div style="display:flex;align-items:center;gap:8px;margin-top:14px;padding:12px 14px;border-radius:14px;background:'+T.surf2+';font-size:14px;font-weight:600">'+svgI.globe(T.head)+'全球 <b class="num">#1,284</b><span style="color:'+T.text3+'">·</span>好友 <b class="num">#3</b><span style="margin-left:auto">'+svgI.chev(T.text3)+'</span></div>'+
+ '<div class="btn" style="margin-top:16px;background:'+T.primary+';color:'+T.onPrimary+'">'+svgI.restart(T.onPrimary)+'再来一局</div></div>');}
+function scrBoard(T){
+ const pod=[['2','Mika','58',T.silver,118],['1','Leo Chen','73',T.gold,140],['3','阿杰','51',T.bronze,104]];
+ const av=(n,c,s)=>'<div style="width:'+s+'px;height:'+s+'px;border-radius:50%;background:'+T.surf2+';border:2px solid '+c+';display:flex;align-items:center;justify-content:center;font-weight:700;font-size:'+s*.36+'px">'+n[0]+'</div>';
+ const rows=[['4','Yuki','49'],['5','Sam K.','47'],['6','老王','44'],['7','Nora','43'],['8','Iván','42'],['9','小鹿','40']];
+ return phone(T,'<div style="position:absolute;top:62px;left:20px;right:20px">'+
+ '<div style="display:flex;align-items:center"><div style="font-size:30px;font-weight:800">排行榜</div><div class="ib" style="margin-left:auto;width:34px;height:34px;background:'+T.surf2+'">'+svgI.close(T.text2)+'</div></div>'+
+ '<div style="display:flex;margin-top:16px;background:'+T.surf+';border-radius:12px;padding:3px;border:1px solid '+T.hair+'">'+['全球','好友','本周'].map((t,i)=>'<div style="flex:1;text-align:center;padding:8px 0;border-radius:9px;font-size:14px;font-weight:700;'+(i==0?'background:'+T.surf2+';color:'+T.text:'color:'+T.text2)+'">'+t+'</div>').join('')+'</div>'+
+ '<div style="display:flex;align-items:flex-end;gap:10px;margin-top:22px">'+pod.map(([r,n,sc,c,h])=>'<div style="flex:1;text-align:center">'+'<div style="display:flex;justify-content:center">'+av(n,c,r=='1'?60:50)+'</div><div style="font-size:13px;font-weight:600;margin-top:6px">'+n+'</div>'+
+  '<div style="margin-top:8px;height:'+h+'px;border-radius:16px 16px 6px 6px;background:linear-gradient(180deg,'+c+'33,'+c+'08);border:1px solid '+c+'55;padding-top:12px"><div class="num" style="font-size:28px;color:'+c+'">'+r+'</div><div class="num" style="font-size:16px;color:'+T.text+';margin-top:4px">'+sc+'</div></div></div>').join('')+'</div>'+
+ '<div style="margin-top:14px;background:'+T.surf+';border-radius:18px;border:1px solid '+T.hair+';overflow:hidden">'+rows.map(([r,n,sc],i)=>'<div style="display:flex;align-items:center;gap:12px;height:48px;padding:0 14px;'+(i?'border-top:1px solid '+T.hair:'')+'"><span class="num" style="width:20px;color:'+T.text3+';font-size:15px">'+r+'</span>'+av(n,T.hair,30)+'<span style="font-size:15px;font-weight:600">'+n+'</span><span class="num" style="margin-left:auto;font-size:17px">'+sc+'</span></div>').join('')+'</div></div>'+
+ '<div style="position:absolute;left:12px;right:12px;bottom:30px;"><div style="display:flex;align-items:center;gap:12px;height:62px;padding:0 16px;border-radius:20px;background:'+T.primary+'1F;border:1px solid '+T.primary+'66">'+
+ '<span class="num" style="font-size:14px;color:'+T.primary+'">#1,284</span>'+av('我',T.primary,34)+'<div><div style="font-size:15px;font-weight:700">我</div><div style="font-size:11px;color:'+T.text2+'">本周提升 34 名</div></div><span class="num" style="margin-left:auto;font-size:22px;color:'+T.primary+'">23</span></div>'+
+ '<div style="text-align:center;font-size:13px;color:'+T.text2+';margin-top:12px">在 Game Center 中查看 ›</div></div>');}
+
+/* ================= Page ================= */
+const app=document.getElementById('app');let P='';
+const sw=(c,n,h,dark)=>'<div><div class="sw" style="background:'+c+';box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)"><span style="color:'+(dark?'#fff':'#111')+'">'+h+'</span></div><div class="swl"><b>'+n+'</b></div></div>';
+
+// 1 cover
+P+='<section id="s1" style="padding-top:88px"><div class="kicker">Snake Feast · iOS · Design Proposal v2</div><h1>整套 UI 重设计提案</h1><p class="lead" style="margin-top:18px">一句话：<b style="color:#111">把「浅色外壳 + 科幻仪表」统一成全沉浸的深色游戏界面，让「你=橙色光点」成为品牌主角。</b>界面元素减半，信息只留玩家真正看的 4 个数字；蛇改为连续的流线身体，食物改为呼应 “Feast” 的金色种子。</p>'+
+'<div class="row" style="margin-top:44px;align-items:center;gap:56px"><div style="text-align:center"><img src="cur-ready.png" style="width:300px;border-radius:36px;box-shadow:0 20px 50px -20px rgba(0,0,0,.35)"><div class="cap">现状</div></div>'+
+'<div style="font-size:48px;color:#C5CBD6">→</div><div style="transform:scale(.73);transform-origin:center;margin:-118px -56px">'+scrGame(A,{cd:.65,vig:.35})+'</div>'+
+'<div class="card" style="flex:1;align-self:stretch"><div style="font-size:13px;font-weight:700;color:#9AA3B2;letter-spacing:.1em">现状 4 个问题</div>'+
+[['风格割裂','浅色 #FAFAFA 外壳 + 深色 HUD + 深色棋盘，三层色温打架，不像一个游戏。'],['信息过载','5 格 KPI + 中英双标签 + 状态灯 + 能量条；顶栏 3 个按钮常驻。'],['装饰噪音','“任务 // 简报”等等宽代码、四角准星、扫描线，抢走了蛇和玩家的注意力。'],['元素不成形','蛇是一节节方块，像进度条；玩家/晶体/蛇头都是青蓝系，辨识度低。']].map(([a,b],i)=>'<div style="display:flex;gap:14px;margin-top:18px"><div style="width:28px;height:28px;border-radius:14px;background:#FEE2E2;color:#DC2626;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none">'+(i+1)+'</div><div><div style="font-weight:700;font-size:16px">'+a+'</div><div style="color:#5B6577;font-size:14px;line-height:1.55;margin-top:2px">'+b+'</div></div></div>').join('')+'</div></div></section>';
+
+// 2 directions
+P+='<section id="s2"><div class="kicker">01 · 方向选择</div><h2>三个主题方向，推荐 A「夜行」</h2><p class="lead">同一局面、同一套布局，仅换主题。三者都采用新的元素造型与精简 HUD。</p><div class="row" style="margin-top:40px;gap:40px">'+
+[[A,'推荐','全深色沉浸。冷蓝蛇 vs 暖橙玩家，冷暖对抗直接讲清“追与逃”。夜间游玩不刺眼，最接近 Apple Arcade 质感。','与现有资产延续性最好'],
+ [B,'备选','米白纸感 + 墨绿蛇 + 珊瑚点，安静、文艺，像 Alto / Monument Valley。','差异化强，但紧张感弱'],
+ [C,'备选','黑紫底 + 品红蛇 + 荧光绿玩家，街机霓虹，刺激感最强。','年轻化，但易显廉价']].map(([T,t,d,n])=>
+ '<div style="flex:1"><div style="display:flex;justify-content:center"><div style="transform:scale(.7);transform-origin:top center;height:612px">'+scrGame(T,{cd:.65,vig:T.key=='B'?.2:.35})+'</div></div>'+
+ '<div class="card" style="margin-top:6px"><div style="display:flex;align-items:center;gap:14px"><div class="ico" style="width:64px;height:64px">'+icon(T,'I1',64)+'</div><div><div style="font-size:22px;font-weight:800">'+T.key+' · '+T.name+'</div><span class="tag '+(t=='推荐'?'rec':'')+'" style="margin-top:6px">'+t+'</span></div></div>'+
+ '<div style="display:flex;gap:6px;margin-top:16px">'+[T.bg,T.board,T.head,T.player,T.food,T.danger].map(c=>'<div style="flex:1;height:30px;border-radius:8px;background:'+c+';box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)"></div>').join('')+'</div>'+
+ '<div style="font-size:12px;color:#9AA3B2;margin-top:6px;display:flex;justify-content:space-between"><span>底</span><span>棋盘</span><span>蛇</span><span>玩家</span><span>食物</span><span>危险</span></div>'+
+ '<p style="font-size:14px;color:#5B6577;line-height:1.6;margin-top:12px">'+d+'</p><p style="font-size:13px;font-weight:700;margin-top:8px">'+n+'</p></div></div>').join('')+'</div></section>';
+
+// 3 screens
+P+='<section id="s3" class="s3"><div class="kicker">02 · 界面全流程（方向 A）</div><h2>6 个关键界面</h2><p class="lead">主页独立出来，不再把规则弹窗压在棋盘上；游戏中只保留暂停按钮，音效/重开收进暂停面板；结算一屏讲完成绩与名次。</p>'+
+'<div class="row" style="margin-top:40px;flex-wrap:wrap;gap:36px 42px">'+
+[[scrHome(A),'① 主页 / 开局','品牌 + 动态棋盘预览 + 三元素图例 + 主按钮'],[scrCountdown(A),'② 倒计时','大号圆体数字 + 方向提示 + 进度点'],[scrGame(A,{cd:.65,vig:.35}),'③ 游戏中','顶栏：暂停｜得分｜最高；下方 3 个迷你指标']].map(([h,a,b])=>'<div><div class="pw"><div>'+h+'</div></div><div class="cap">'+a+'</div><div class="sub">'+b+'</div></div>').join('')+
+[[scrPause(A),'④ 暂停','底部抽屉：继续 / 重开 / 音效 / 排行榜'],[scrOver(A),'⑤ 结算','原因 + 巨型分数 + 新纪录 + 名次条 + 再来一局'],[scrBoard(A),'⑥ 排行榜','领奖台 Top3 + 列表 + 我的名次常驻底部']].map(([h,a,b])=>'<div><div class="pw"><div>'+h+'</div></div><div class="cap">'+a+'</div><div class="sub">'+b+'</div></div>').join('')+'</div></section>';
+
+// 4 icon
+P+='<section id="s4"><div class="kicker">03 · App 图标</div><h2>三个图标候选，推荐 I1「围猎」</h2><p class="lead">图标只保留两个元素：蛇 + 你。差别在于讲故事的方式。</p><div class="row" style="margin-top:36px;gap:40px">'+
+[['I1','围猎 Encircle','推荐','蛇沿网格盘成一圈，蛇头指向圈内的橙点——“被包围”一眼可读；直角圆转角保留棋盘基因。'],
+ ['I2','对视 Face-off','备选','巨大蛇头带双眼，与橙点对峙。最有角色感、最活泼，但偏卡通。'],
+ ['I3','S 进化','备选','当前 S-Chase 的扁平化精修：去光晕、换新配色。延续性最好，新鲜感最弱。']].map(([k,n,t,d])=>
+ '<div class="card" style="flex:1;text-align:center"><div class="ico" style="width:260px;height:260px;margin:0 auto;box-shadow:0 20px 40px -18px rgba(0,0,0,.45)">'+icon(A,k,260)+'</div>'+
+ '<div style="display:flex;justify-content:center;gap:18px;align-items:flex-end;margin-top:22px">'+[120,60,40,29].map(z=>'<div class="ico" style="width:'+z+'px;height:'+z+'px">'+icon(A,k,z)+'</div>').join('')+'</div>'+
+ '<div style="font-size:22px;font-weight:800;margin-top:20px">'+k+' · '+n+' <span class="tag '+(t=='推荐'?'rec':'')+'">'+t+'</span></div><p style="font-size:14px;color:#5B6577;line-height:1.6;margin-top:10px">'+d+'</p></div>').join('')+'</div>'+
+'<div class="row" style="margin-top:32px;gap:32px">'+
+ '<div class="card" style="flex:1.25;padding:0;overflow:hidden"><div style="height:360px;background:linear-gradient(160deg,#2B3A67,#6B4E8F 55%,#C77B6A);display:grid;grid-template-columns:repeat(4,1fr);gap:26px 0;padding:34px 30px;justify-items:center">'+
+ ['#34C759','#0A84FF','#FF9F0A','#FF375F','ICON','#5E5CE6','#64D2FF','#30D158'].map((c,i)=>'<div style="text-align:center"><div class="ico" style="width:72px;height:72px;'+(c=='ICON'?'':'background:linear-gradient(160deg,'+c+','+c+'AA)')+'">'+(c=='ICON'?icon(A,'I1',72):'')+'</div><div style="color:#fff;font-size:12px;margin-top:6px;font-weight:500">'+(c=='ICON'?'Snake Feast':['信息','天气','备忘录','音乐','','播客','地图','健康'][i])+'</div></div>').join('')+
+ '</div><div style="padding:16px 22px;font-size:14px;color:#5B6577">主屏情景：深底 + 暖橙光点在彩色壁纸上依然跳出，40px 下可辨识。</div></div>'+
+ '<div class="card" style="flex:1"><div style="font-weight:700">iOS 18 图标外观（I1）</div><div style="display:flex;gap:22px;margin-top:22px">'+[['默认',undefined],['深色','dark'],['着色','tint']].map(([n,m])=>'<div style="text-align:center"><div class="ico" style="width:120px;height:120px">'+icon(A,'I1',120,m)+'</div><div class="sub" style="margin-top:8px">'+n+'</div></div>').join('')+'</div>'+
+ '<div style="font-weight:700;margin-top:28px">同族资产</div><div style="display:flex;align-items:center;gap:16px;margin-top:14px"><div class="ico" style="width:44px;height:44px">'+icon(A,'I1',44)+'</div><div style="font-size:24px;font-weight:800;letter-spacing:-.02em">Snake Feast</div><span style="font-size:13px;color:#5B6577">主页品牌位 · 替代旧顶栏 Logo</span></div></div></div></section>';
+
+// 5 elements
+const EC=110;const el=(o,t,d)=>'<div style="flex:1;text-align:center"><div style="display:inline-block;border-radius:22px;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.06)">'+board({T:A,cols:o.cols||2,rows:o.rows||2,cell:o.cell||EC,...o})+'</div><div class="cap">'+t+'</div><div class="sub">'+d+'</div></div>';
+P+='<section id="s5"><div class="kicker">04 · 游戏元素</div><h2>元素造型：一眼区分「谁追谁、吃什么」</h2><p class="lead">冷暖 + 形状双重编码：蛇=冷蓝圆管、你=暖橙圆点、食物=金色菱形。所有标记仍严格锁定在单格内。</p>'+
+'<div class="row" style="margin-top:36px;gap:24px">'+
+ el({cols:1,rows:1,cell:200,player:[0,0],cd:1},'你 · 待冲刺','橙核 + 高光 + 满环 = 冲刺就绪')+
+ el({cols:1,rows:1,cell:200,player:[0,0],cd:.4},'你 · 冷却中','外环顺时针回填 2.6s（替代 HUD 文案）')+
+ el({cols:3,rows:1,cell:100,player:[2,0],dash:'R',cd:0},'你 · 冲刺拖影','2 格残影，0.15s 淡出')+
+ el({cols:1,rows:1,cell:200,food:[0,0]},'金种 · 食物','圆角菱形 45°，缓慢呼吸光晕')+
+'</div><div class="row" style="margin-top:28px;gap:24px">'+
+ el({cols:6,rows:2,cell:64,snake:snakeFrom([0,1],[['R',4],['U',1],['R',1]])},'蛇 · 连续身体','尾细暗 → 头粗亮；脊线高光；头带双眼朝向前方')+
+ el({cols:3,rows:2,cell:64,food:[1,1],eat:true},'吃到 · 反馈','金环扩散 + 8 粒子 + “+1” 上浮，配轻触感')+
+ el({cols:4,rows:2,cell:64,snake:snakeFrom([0,1],[['R',2]]),player:[3,1],threat:1,cd:1},'危险 · 逼近','蛇头 ≤3 格：屏幕边缘红色呼吸暗角')+
+ el({cols:4,rows:2,cell:64,snake:snakeFrom([0,1],[['R',2],['U',1]]),player:[3,0],dead:true},'死亡 · 定格','蛇身转红、玩家变红，0.3s 震屏')+
+'</div><div class="card" style="margin-top:28px;display:flex;gap:40px;align-items:center"><div style="border-radius:16px;overflow:hidden;flex:none">'+board({T:A,cols:10,rows:4,cell:36})+'</div><div style="font-size:15px;color:#5B6577;line-height:1.7"><b style="color:#111">棋盘：</b>去掉网格线、扫描带、四角准星、坐标铭牌；改为交点微点阵（7% 白）+ 中心微光渐变。网格仍可感知，但退到背景。<br><b style="color:#111">倒计时 / 结算：</b>棋盘压暗 45–55%，不再整屏模糊科幻面板。</div></div></section>';
+
+// 6 design system
+P+='<section id="s6"><div class="kicker">05 · 设计系统（方向 A）</div><h2>色板、字体与组件</h2><div class="row" style="margin-top:32px;gap:32px"><div class="card" style="flex:1.3"><div style="font-weight:700;margin-bottom:16px">色板 Tokens</div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px">'+
+[[A.bg,'bg','#07090E',1],[A.surf,'surface','#11151E',1],[A.surf2,'surface-2','#1A1F2B',1],[A.board,'board','#0B0E15',1],['#F3F5F9','text','#F3F5F9',0],
+ [A.head,'snake.head','#5CC8FF',0],[A.tail,'snake.tail','#0F2C45',1],[A.player,'player / primary','#FF7A2F',0],[A.food,'food / gold','#FFC83D',0],[A.danger,'danger','#FF4D5E',0]].map(([c,n,h,d])=>sw(c,n,h,d)+'').join('')+
+'</div><p style="font-size:13px;color:#5B6577;margin-top:12px;line-height:1.6">规则：<b>橙色只给「你」和主按钮</b>；蛇专属冷蓝；金色只给食物与纪录；红色只给危险与死亡。一种颜色一个语义。</p></div>'+
+'<div class="card" style="flex:1"><div style="font-weight:700;margin-bottom:16px">字体</div><table><tr><th>用途</th><th>字体</th><th>规格</th></tr>'+
+[['分数大字','SF Pro Rounded Heavy','96 / 38 / 22 pt，等宽数字'],['标题','SF Pro Display Bold','30 / 26 pt'],['正文','SF Pro Text / 苹方','15 pt，次要色'],['标签','SF Pro Text Semibold','11–12 pt，不再用等宽代码风']].map(r=>'<tr>'+r.map(x=>'<td>'+x+'</td>').join('')+'</tr>').join('')+'</table>'+
+'<div style="font-weight:700;margin:24px 0 14px">组件</div><div style="background:'+A.bg+';border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:10px;color:'+A.text+'">'+
+'<div class="btn" style="background:'+A.primary+';color:'+A.onPrimary+'">'+svgI.play(A.onPrimary)+'主按钮 · 开始游戏</div>'+
+'<div style="display:flex;gap:10px"><div style="flex:1;height:46px;border-radius:14px;background:'+A.surf+';border:1px solid '+A.hair+';display:flex;align-items:center;justify-content:center;gap:7px;font-size:14px;font-weight:600">'+svgI.trophy(A.text2)+'次按钮</div>'+
+'<div class="ib" style="background:'+A.surf2+';border:1px solid '+A.hair+'">'+svgI.pause(A.text)+'</div>'+
+'<span class="badge" style="background:'+A.gold+';color:#2A1A00">'+svgI.crown('#2A1A00')+'新纪录</span><span class="badge" style="background:'+A.danger+'22;color:'+A.danger+'">被蛇追上了</span></div></div></div></div>'+
+'<div class="card" style="margin-top:28px"><div style="font-weight:700;margin-bottom:6px">动效原则</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;font-size:14px;color:#5B6577;line-height:1.6;margin-top:10px">'+
+[['得分','分数 1.0→1.25→1.0 弹性 0.35s + 金色闪烁'],['冲刺','玩家 2 格残影 + 外环清空后回填'],['逼近','红色暗角随距离 0→55% 呼吸'],['结算','卡片自下 24pt 弹入，分数从 0 滚动到终值']].map(([a,b])=>'<div><b style="color:#111;display:block">'+a+'</b>'+b+'</div>').join('')+'</div></div></section>';
+
+// 7 change scope
+P+='<section id="s7"><div class="kicker">06 · 改动范围与待确认</div><h2>批准后实施的影响面</h2><div class="row" style="margin-top:28px;gap:32px"><div class="card" style="flex:1.5;padding:8px 8px"><table class="cmp"><tr><th>模块</th><th>现状</th><th>新设计</th><th>涉及文件</th></tr>'+
+[['主题色','浅外壳 + 深仪表，青/蓝/橙/绿混用','全深色，4 语义色','Theme.swift'],
+ ['棋盘元素','方块蛇、准星、扫描带、网格线','连续圆管蛇、点阵、金种、冷却环','GameBoardView.swift'],
+ ['HUD','5 格 KPI + 中英标签 + 能量条','得分居中 + 最高 + 3 迷你指标','HUDView.swift'],
+ ['顶栏','Logo + 品牌 + 3 按钮','仅暂停；音效/重开进暂停抽屉','ControlsView.swift'],
+ ['弹窗','科幻卡片覆盖棋盘','独立主页 + 底部抽屉 + 结算卡','OverlayViews.swift · ContentView.swift'],
+ ['排行榜','能量卡片列表','领奖台 + 列表 + 我的名次常驻','LeaderboardView.swift'],
+ ['图标','S-Chase','I1 围猎（含深色/着色）','generate_icon.swift · Assets'],
+ ['文案','“任务 // 简报”等代码风','去掉代码风标签，新增少量 key','Localizable ×4']].map(r=>'<tr>'+r.map(x=>'<td>'+x+'</td>').join('')+'</tr>').join('')+'</table></div>'+
+'<div class="card" style="flex:1"><div style="font-weight:700">需要你拍板</div>'+
+['主题方向：A 夜行 / B 晨纸 / C 脉冲','图标：I1 围猎 / I2 对视 / I3 S 进化','HUD 精简：5 KPI → 得分+最高+3 迷你指标，可接受？','顶栏：音效、重开收进暂停抽屉，可接受？','食物：青绿晶体 → 金色种子，可接受？'].map((t,i)=>'<div style="display:flex;gap:12px;margin-top:16px;font-size:15px;line-height:1.5"><span style="width:24px;height:24px;border-radius:12px;background:#EEF2FF;color:#1D4ED8;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none">'+(i+1)+'</span>'+t+'</div>').join('')+
+'<p style="font-size:13px;color:#9AA3B2;margin-top:22px;line-height:1.6">游戏规则、手感参数、Game Center、多语言逻辑均不变；仅视觉与布局层改动。</p></div></div></section>';
+app.innerHTML=P;
+document.body.dataset.off=JSON.stringify([...document.querySelectorAll('section')].map(s=>[s.offsetTop,s.offsetHeight]));
+</script></body></html>

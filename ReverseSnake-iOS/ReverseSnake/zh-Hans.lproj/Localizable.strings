@@ -1,25 +1,18 @@
 /* Snake Feast — 简体中文 */
 
-/* 顶栏 — VoiceOver 标签 */
+/* 顶栏 / 按钮 — 同时用作 VoiceOver 标签 */
 "control.pause" = "暂停";
 "control.resume" = "继续";
 "control.sound.on" = "音效开";
 "control.sound.off" = "音效关";
 "control.restart" = "重开";
 
-/* HUD — 主标签 + 次级短说明 */
+/* HUD */
 "hud.score" = "得分";
 "hud.best" = "最高";
 "hud.length" = "蛇长";
 "hud.space" = "空间";
 "hud.threat" = "追击";
-"hud.sub.score" = "分数";
-"hud.sub.best" = "纪录";
-"hud.sub.length" = "节数";
-"hud.sub.space" = "余量";
-"hud.sub.threat" = "速度";
-
-/* HUD — 状态灯 */
 "hud.state.ready" = "待机";
 "hud.state.countdown" = "准备";
 "hud.state.running" = "进行中";
@@ -27,36 +20,43 @@
 "hud.state.over" = "已结束";
 "hud.dash.ready" = "就绪";
 
-/* Core Graphics 棋盘浮层 */
-"board.grid" = "网格 %1$dx%2$d  //  区域 07";
+/* 棋盘 */
 "board.go" = "开始";
-"board.countdown.hint" = "先滑动选好逃跑方向";
+"board.countdown.hint" = "先滑动，选好逃跑方向";
 
-/* 弹框 */
-"panel.badge.ready" = "任务 // 简报";
-"panel.badge.paused" = "系统 // 暂停";
-"panel.badge.over" = "本局 // 终止";
+/* 主页 */
+"home.tagline" = "反向贪吃蛇 · 这次你是猎物";
 "panel.ready.title" = "你是被追的那一个";
-"panel.ready.body" = "控制橙点躲避追击，吃青绿晶体得分。\n每得 1 分，蛇变长 2 节、追得更快。\n撞到蛇身即结束；墙只挡路。";
-"panel.hint.swipe.title" = "滑动转向";
-"panel.hint.swipe.detail" = "滑动 / 转向";
-"panel.hint.dash.title" = "点按冲刺";
-"panel.hint.dash.detail" = "点按 / 冲刺 · 2.6s";
+"panel.ready.body" = "滑动转向，轻点冲刺。\n每吃 1 颗金种，蛇长 2 节、追得更快。";
+"legend.you" = "你";
+"legend.you.sub" = "躲开追击";
+"legend.seed" = "金种";
+"legend.seed.sub" = "+1 分";
+"legend.snake" = "蛇";
+"legend.snake.sub" = "碰到即输";
 "panel.start" = "开始游戏";
+"home.leaderboard" = "排行榜";
+"home.best" = "最高纪录 %ld";
+
+/* 暂停 */
 "panel.paused.title" = "已暂停";
 "panel.paused.body" = "蛇在原地等你。";
 "panel.resume" = "继续";
-"panel.over.title" = "本局结束";
-"panel.score" = "分数";
+"pause.restart" = "重新开始";
+"setting.sound" = "音效";
+"setting.appearance" = "外观";
+"appearance.system" = "跟随系统";
+"appearance.light" = "浅色";
+"appearance.dark" = "深色";
+
+/* 结算 */
 "panel.replay" = "再来一局";
+"over.home" = "返回主页";
 "panel.over.hit" = "一头撞上了蛇身";
 "panel.over.caught" = "被蛇追上了";
 
 /* 排行榜（Game Center） */
-"lb.open" = "全球排行";
-"lb.view" = "查看排行榜";
-"lb.badge" = "排行 // 实时";
-"lb.title" = "全球排行榜";
+"lb.title" = "排行榜";
 "lb.tab.global" = "全球";
 "lb.tab.friends" = "好友";
 "lb.tab.weekly" = "本周";
@@ -74,7 +74,7 @@
 "lb.open.system" = "在 Game Center 中查看";
 "lb.close" = "关闭";
 
-/* 结算页名次条 */
+/* 结算名次条 */
 "rank.global" = "全球 #%ld";
 "rank.friends" = "好友 #%ld";
 "rank.new.best" = "新纪录";

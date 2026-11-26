@@ -18,7 +18,7 @@ enum L10n {
 
     /// Stable keys. Values are never hard-coded in Swift.
     enum K {
-        // Top bar (VoiceOver)
+        // Controls (also VoiceOver labels)
         static let controlPause = "control.pause"
         static let controlResume = "control.resume"
         static let controlSoundOn = "control.sound.on"
@@ -32,13 +32,6 @@ enum L10n {
         static let hudSpace = "hud.space"
         static let hudThreat = "hud.threat"
 
-        // HUD secondary short descriptors
-        static let hudSubScore = "hud.sub.score"
-        static let hudSubBest = "hud.sub.best"
-        static let hudSubLength = "hud.sub.length"
-        static let hudSubSpace = "hud.sub.space"
-        static let hudSubThreat = "hud.sub.threat"
-
         // HUD state lamp
         static let stateReady = "hud.state.ready"
         static let stateCountdown = "hud.state.countdown"
@@ -48,34 +41,21 @@ enum L10n {
         static let dashReady = "hud.dash.ready"
 
         // Core Graphics board
-        static let boardGrid = "board.grid"
         static let boardGo = "board.go"
         static let boardCountdownHint = "board.countdown.hint"
 
         // Panels
-        static let badgeReady = "panel.badge.ready"
-        static let badgePaused = "panel.badge.paused"
-        static let badgeOver = "panel.badge.over"
         static let readyTitle = "panel.ready.title"
         static let readyBody = "panel.ready.body"
-        static let hintSwipeTitle = "panel.hint.swipe.title"
-        static let hintSwipeDetail = "panel.hint.swipe.detail"
-        static let hintDashTitle = "panel.hint.dash.title"
-        static let hintDashDetail = "panel.hint.dash.detail"
         static let start = "panel.start"
         static let pausedTitle = "panel.paused.title"
         static let pausedBody = "panel.paused.body"
         static let resume = "panel.resume"
-        static let overTitle = "panel.over.title"
-        static let score = "panel.score"
         static let replay = "panel.replay"
         static let overHitBody = "panel.over.hit"
         static let overCaught = "panel.over.caught"
 
         // Leaderboard (Game Center)
-        static let lbOpen = "lb.open"
-        static let lbView = "lb.view"
-        static let lbBadge = "lb.badge"
         static let lbTitle = "lb.title"
         static let lbTabGlobal = "lb.tab.global"
         static let lbTabFriends = "lb.tab.friends"
@@ -102,6 +82,21 @@ enum L10n {
         static let rankSynced = "rank.synced"
         static let rankLogin = "rank.login"
         static let rankOffline = "rank.offline"
+
+        // Design v2: home, legend, pause sheet, appearance
+        static let homeTagline = "home.tagline"
+        static let homeLeaderboard = "home.leaderboard"
+        static let homeBest = "home.best"
+        static let legendYou = "legend.you"
+        static let legendYouSub = "legend.you.sub"
+        static let legendSeed = "legend.seed"
+        static let legendSeedSub = "legend.seed.sub"
+        static let legendSnake = "legend.snake"
+        static let legendSnakeSub = "legend.snake.sub"
+        static let pauseRestart = "pause.restart"
+        static let settingSound = "setting.sound"
+        static let settingAppearance = "setting.appearance"
+        static let overHome = "over.home"
     }
 
     /// SwiftUI text. LocalizedStringKey keeps locale changes reactive.

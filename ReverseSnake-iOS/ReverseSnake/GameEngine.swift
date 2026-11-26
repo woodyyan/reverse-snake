@@ -22,13 +22,34 @@ enum Phase: String {
     case over
 }
 
+/// Effect colour role; the renderer maps it to the active theme palette.
+enum FxKind {
+    case food, danger, player, snake
+}
+
 struct Particle {
     var x: CGFloat
     var y: CGFloat
     var vx: CGFloat
     var vy: CGFloat
     var life: CGFloat
-    var color: UIColor
+    var kind: FxKind
+}
+
+/// Expanding ring + floating "+1" where a seed was eaten (presentation only).
+struct EatFx {
+    static let life: Double = 650
+    var cell: GridPoint
+    var age: Double = 0
+}
+
+/// Afterimages along the cells a dash skipped over (presentation only).
+struct DashFx {
+    static let life: Double = 240
+    var origin: GridPoint
+    var dir: Delta
+    var steps: Int
+    var age: Double = 0
 }
 
 struct HUDData {
@@ -109,6 +130,8 @@ final class GameEngine: ObservableObject {
     var graceMs: Double = 0
     var flash: CGFloat = 0
     var particles: [Particle] = []
+    var eatFx: [EatFx] = []
+    var dashFx: DashFx?
     var snakePlan: (dir: Delta, left: Int)?
     var renderTime: Double = 0
     var cellSize: CGFloat = 24
@@ -169,6 +192,8 @@ final class GameEngine: ObservableObject {
         stuckMs = 0
         flash = 0
         particles = []
+        eatFx = []
+        dashFx = nil
         snakePlan = nil
         playerAcc = 0
         snakeAcc = 0
@@ -257,7 +282,8 @@ final class GameEngine: ObservableObject {
         guard let d = dot, player == d else { return }
         score += 1
         pendingGrowth += grow
-        burst(d.x, d.y, UIColor(hex: 0x3DFFC0), 18)
+        burst(d.x, d.y, .food, 12)
+        eatFx.append(EatFx(cell: d))
         flash = 1
         beep(660, 0.07, .triangle, 0.05)
         Haptics.shared.collect()
@@ -275,7 +301,7 @@ final class GameEngine: ObservableObject {
         let nx = player.x + d.x, ny = player.y + d.y
         if !inBounds(nx, ny) { return false }            // wall: blocks, never kills
         if playerBlocked().contains(GridPoint(x: nx, y: ny)) {
-            burst(nx, ny, UIColor(hex: 0xFF5C6E), 14)
+            burst(nx, ny, .danger, 14)
             gameOver(L10n.K.overHitBody)
             return false
         }
@@ -292,11 +318,15 @@ final class GameEngine: ObservableObject {
         guard phase == .running, dashCd <= 0 else { return }
         if dir.x == 0 && dir.y == 0 && !dirQueue.isEmpty { dir = dirQueue.removeFirst() }
         dashCd = dashCD
-        burst(player.x, player.y, UIColor(hex: 0xFF9A4D), 10)
+        burst(player.x, player.y, .player, 10)
+        let origin = player
+        var steps = 0
         for _ in 0..<2 {
             if !tryMove(dir) { break }
+            steps += 1
             collect()
         }
+        if steps > 0 { dashFx = DashFx(origin: origin, dir: dir, steps: steps) }
         guard phase == .running else { return }
         beep(300, 0.09, .sawtooth, 0.035)
         Haptics.shared.dash()
@@ -333,7 +363,7 @@ final class GameEngine: ObservableObject {
                 var i = 0
                 while i < cut && snake.count > 3 {
                     let t = snake.removeLast()
-                    burst(t.x, t.y, UIColor(hex: 0x42CBFF), 5)
+                    burst(t.x, t.y, .snake, 5)
                     i += 1
                 }
                 snakePlan = nil
@@ -350,7 +380,7 @@ final class GameEngine: ObservableObject {
     }
 
     // ---------- fx ----------
-    func burst(_ gx: Int, _ gy: Int, _ color: UIColor, _ n: Int) {
+    func burst(_ gx: Int, _ gy: Int, _ kind: FxKind, _ n: Int) {
         let cx = (CGFloat(gx) + 0.5) * cellSize
         let cy = (CGFloat(gy) + 0.5) * cellSize
         for _ in 0..<n {
@@ -358,7 +388,7 @@ final class GameEngine: ObservableObject {
             let sp = CGFloat.random(in: 0.6...3.0)
             particles.append(Particle(x: cx, y: cy,
                                       vx: cos(a) * sp, vy: sin(a) * sp,
-                                      life: 1, color: color))
+                                      life: 1, kind: kind))
         }
     }
 
@@ -374,6 +404,14 @@ final class GameEngine: ObservableObject {
         }
         particles.removeAll { $0.life <= 0 }
         flash = max(0, flash - 0.035 * f)
+        if !eatFx.isEmpty {
+            for i in eatFx.indices { eatFx[i].age += dt }
+            eatFx.removeAll { $0.age >= EatFx.life }
+        }
+        if var d = dashFx {
+            d.age += dt
+            dashFx = d.age >= DashFx.life ? nil : d
+        }
     }
 
     private func beep(_ freq: Double, _ dur: Double, _ wave: SoundEngine.Wave, _ vol: Float) {
@@ -434,6 +472,14 @@ final class GameEngine: ObservableObject {
         Haptics.shared.tap()
     }
 
+    /// Leave the round and return to the home screen.
+    func backToHome() {
+        reset()
+        phase = .ready
+        updateHUD()
+        Haptics.shared.tap()
+    }
+
     func pauseForBackground() {
         if phase == .running || phase == .countdown { pause() }
     }
@@ -443,7 +489,7 @@ final class GameEngine: ObservableObject {
         phase = .over
         overReasonKey = reasonKey
         updateHUD()
-        burst(player.x, player.y, UIColor(hex: 0xFF5C6E), 26)
+        burst(player.x, player.y, .danger, 26)
         beep(150, 0.35, .sawtooth, 0.06)
         Haptics.shared.gameOver()
         shakeToken += 1
@@ -476,6 +522,12 @@ final class GameEngine: ObservableObject {
     func tick(dt: Double) {
         let dt = min(max(dt, 0), 90)
         renderTime += dt
+        #if DEBUG
+        if debugFreeze {
+            updateParticles(dt: dt)
+            return
+        }
+        #endif
 
         if phase == .countdown {
             let before = Int(ceil(countdown / 1000))
@@ -517,4 +569,53 @@ final class GameEngine: ObservableObject {
         }
         updateParticles(dt: dt)
     }
+
+    // ---------- debug staging (screenshots only) ----------
+    #if DEBUG
+    var debugFreeze = false
+
+    /// Freezes a representative mid-game frame: "running" | "paused" |
+    /// "over" | "countdown". Launch with `-SFDebugState running`.
+    func debugStage(_ state: String) {
+        let u = max(1, (rows - 6) / 4)
+        var p = GridPoint(x: 1, y: rows - 2)
+        var cells = [p]
+        func walk(_ dx: Int, _ dy: Int, _ n: Int) {
+            for _ in 0..<max(0, n) {
+                p = GridPoint(x: p.x + dx, y: p.y + dy)
+                cells.append(p)
+            }
+        }
+        if state == "countdown" {
+            walk(1, 0, 4)
+        } else {
+            walk(1, 0, cols - 4); walk(0, -1, u)
+            walk(-1, 0, cols - 6); walk(0, -1, u)
+            walk(1, 0, min(6, cols - 4)); walk(0, -1, u)
+        }
+        snake = cells.reversed()
+        let head = snake[0]
+        pendingGrowth = 0
+        dir = Delta(x: 1, y: 0)
+        dot = GridPoint(x: 2, y: 2)
+        if state == "over" {
+            player = GridPoint(x: head.x, y: max(0, head.y - 1))
+            overReasonKey = L10n.K.overCaught
+            isNewBest = true
+            phase = .over
+        } else if state == "countdown" {
+            player = GridPoint(x: min(cols - 2, head.x + 4), y: max(1, head.y - 8))
+            phase = .countdown
+            countdown = 2400
+        } else {
+            player = GridPoint(x: min(cols - 2, head.x + 3), y: max(1, head.y - 2))
+            phase = state == "paused" ? .paused : .running
+            dashCd = dashCD * 0.4
+        }
+        score = state == "countdown" ? 0 : (state == "over" ? 23 : 17)
+        best = max(best, state == "over" ? 23 : 42)
+        debugFreeze = true
+        updateHUD()
+    }
+    #endif
 }

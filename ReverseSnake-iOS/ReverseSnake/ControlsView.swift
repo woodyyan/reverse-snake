@@ -1,108 +1,187 @@
 import SwiftUI
 
-// MARK: - Top bar: logo + brand + unified dark energy icon controls
+// MARK: - Shared UI components (design v2)
+// Calm, Apple-style controls: solid primary, quiet surfaces, hairline borders.
+// Every colour comes from Theme, so light / dark switch automatically.
 
-struct HeaderBar: View {
-    @ObservedObject var engine: GameEngine
-    let m: LayoutMetrics
+/// Shared press feedback.
+struct SoftPressStyle: ButtonStyle {
+    var scale: CGFloat = 0.96
 
-    var body: some View {
-        HStack(alignment: .center, spacing: m.compact ? 6 : 8) {
-            // Game logo in the top-left corner (same artwork family as AppIcon).
-            Image("Logo")
-                .resizable()
-                .scaledToFit()
-                .frame(width: m.logoSize, height: m.logoSize)
-                .clipShape(RoundedRectangle(cornerRadius: m.logoSize * 0.22))
-                .overlay(
-                    RoundedRectangle(cornerRadius: m.logoSize * 0.22)
-                        .stroke(Theme.line, lineWidth: 1)
-                )
-
-            // Brand name stays identical in every language (product name).
-            (Text(verbatim: "SNAKE").foregroundColor(Theme.blue) + Text(verbatim: " FEAST").foregroundColor(Theme.ink))
-                .font(.system(size: m.brandSize, weight: .bold))
-                .tracking(-0.4)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-
-            Spacer(minLength: 4)
-
-            HStack(spacing: m.compact ? 6 : 8) {
-                EnergyIconButton(
-                    systemName: engine.phase == .paused ? "play.fill" : "pause.fill",
-                    labelKey: engine.phase == .paused ? L10n.K.controlResume : L10n.K.controlPause,
-                    tint: engine.phase == .paused ? Theme.orange : Theme.cyan,
-                    m: m
-                ) {
-                    if engine.phase == .paused { engine.resume() } else { engine.pause() }
-                }
-
-                EnergyIconButton(
-                    systemName: engine.soundOn ? "speaker.wave.2.fill" : "speaker.slash.fill",
-                    labelKey: engine.soundOn ? L10n.K.controlSoundOn : L10n.K.controlSoundOff,
-                    tint: engine.soundOn ? Theme.cyan : Theme.hudLabel,
-                    m: m
-                ) {
-                    engine.soundOn.toggle()
-                    Haptics.shared.tap()
-                }
-
-                EnergyIconButton(
-                    systemName: "arrow.counterclockwise",
-                    labelKey: L10n.K.controlRestart,
-                    tint: Theme.cyan,
-                    m: m
-                ) {
-                    engine.start()
-                }
-            }
-            .fixedSize(horizontal: true, vertical: false)
-        }
-        .padding(.bottom, m.headerGap)
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? scale : 1)
+            .opacity(configuration.isPressed ? 0.85 : 1)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
     }
 }
 
-/// One dark energy panel per control: HUD gradient + border + cyan glow,
-/// so the three buttons read as a single control cluster instead of system buttons.
-private struct EnergyIconButton: View {
-    let systemName: String
-    let labelKey: String
-    let tint: Color
-    let m: LayoutMetrics
+/// Full-width primary action (start, resume, play again).
+struct PrimaryButton: View {
+    let titleKey: String
+    var icon: String? = nil
+    var compact = false
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            ZStack {
-                RoundedRectangle(cornerRadius: m.controlRadius)
-                    .fill(LinearGradient(colors: [Theme.hudTop, Theme.hudBottom],
-                                         startPoint: .top, endPoint: .bottom))
-                RoundedRectangle(cornerRadius: m.controlRadius)
-                    .fill(LinearGradient(colors: [Theme.cyan.opacity(0.10), Color.clear],
-                                         startPoint: .top, endPoint: .bottom))
-                Image(systemName: systemName)
-                    .font(.system(size: m.controlIcon, weight: .bold))
-                    .foregroundColor(tint)
-                    .shadow(color: tint.opacity(0.55), radius: 5)
+            HStack(spacing: 8) {
+                if let icon {
+                    Image(systemName: icon)
+                        .font(.system(size: compact ? 14 : 16, weight: .bold))
+                }
+                L10n.t(titleKey)
+                    .font(.system(size: compact ? 16 : 18, weight: .bold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
             }
-            .frame(width: m.controlSize, height: m.controlSize)
-            .overlay(
-                RoundedRectangle(cornerRadius: m.controlRadius)
-                    .stroke(Theme.hudBorder, lineWidth: 1)
-            )
+            .foregroundColor(Theme.onPrimary)
+            .frame(maxWidth: .infinity)
+            .frame(height: compact ? 48 : 56)
+            .background(RoundedRectangle(cornerRadius: compact ? 15 : 18, style: .continuous)
+                .fill(Theme.primary))
+            .contentShape(Rectangle())
         }
-        .buttonStyle(EnergyPressStyle())
+        .buttonStyle(SoftPressStyle())
+    }
+}
+
+/// Quiet secondary action on a surface card.
+struct SecondaryButton: View {
+    let icon: String
+    let titleKey: String
+    var compact = false
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 7) {
+                Image(systemName: icon)
+                    .font(.system(size: compact ? 13 : 15, weight: .semibold))
+                    .foregroundColor(Theme.text2)
+                L10n.t(titleKey)
+                    .font(.system(size: compact ? 13 : 14, weight: .semibold))
+                    .foregroundColor(Theme.text)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+            }
+            .padding(.horizontal, 10)
+            .frame(maxWidth: .infinity)
+            .frame(height: compact ? 42 : 46)
+            .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
+            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Theme.hairline, lineWidth: 1))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(SoftPressStyle())
+    }
+}
+
+/// Circular icon button (pause, close).
+struct RoundIconButton: View {
+    let systemName: String
+    let labelKey: String
+    let size: CGFloat
+    var tint: Color = Theme.text
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: size * 0.36, weight: .bold))
+                .foregroundColor(tint)
+                .frame(width: size, height: size)
+                .background(Circle().fill(Theme.surface2))
+                .overlay(Circle().stroke(Theme.hairline, lineWidth: 1))
+                .contentShape(Circle())
+        }
+        .buttonStyle(SoftPressStyle(scale: 0.9))
         .accessibilityLabel(L10n.t(labelKey))
     }
 }
 
-/// Shared press feedback for top-bar icon buttons and dialog primary buttons.
-struct EnergyPressStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.88 : 1)
-            .brightness(configuration.isPressed ? 0.30 : 0)
-            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+/// Capsule badge: reason, new best, etc.
+struct Pill: View {
+    let text: Text
+    var icon: String? = nil
+    let foreground: Color
+    let background: Color
+
+    var body: some View {
+        HStack(spacing: 5) {
+            if let icon {
+                Image(systemName: icon).font(.system(size: 11, weight: .bold))
+            }
+            text.font(.system(size: 13, weight: .bold)).lineLimit(1)
+        }
+        .foregroundColor(foreground)
+        .padding(.vertical, 6)
+        .padding(.horizontal, 12)
+        .background(Capsule().fill(background))
+        .fixedSize()
+    }
+}
+
+/// Initial-letter avatar used by the leaderboard.
+struct Avatar: View {
+    let name: String
+    let size: CGFloat
+    var ring: Color = Theme.hairline
+    var ringWidth: CGFloat = 1
+
+    var body: some View {
+        Text(verbatim: String(name.trimmingCharacters(in: .whitespaces).prefix(1)).uppercased())
+            .font(.system(size: size * 0.38, weight: .bold))
+            .foregroundColor(Theme.text)
+            .frame(width: size, height: size)
+            .background(Circle().fill(Theme.surface2))
+            .overlay(Circle().stroke(ring, lineWidth: ringWidth))
+    }
+}
+
+// MARK: - Element glyphs (home legend), drawn with the same colours as the board
+
+struct PlayerGlyph: View {
+    var size: CGFloat = 26
+    var body: some View {
+        ZStack {
+            Circle().fill(Theme.player.opacity(0.18))
+            Circle().stroke(Theme.player, lineWidth: size * 0.08).padding(size * 0.06)
+            Circle().fill(Theme.player).frame(width: size * 0.56, height: size * 0.56)
+            Circle().fill(Theme.playerHi).frame(width: size * 0.18, height: size * 0.18)
+                .offset(x: -size * 0.08, y: -size * 0.08)
+        }
+        .frame(width: size, height: size)
+    }
+}
+
+struct SeedGlyph: View {
+    var size: CGFloat = 26
+    var body: some View {
+        ZStack {
+            Circle().fill(Theme.food.opacity(0.18))
+            RoundedRectangle(cornerRadius: size * 0.1, style: .continuous)
+                .fill(Theme.food)
+                .frame(width: size * 0.44, height: size * 0.44)
+                .overlay(RoundedRectangle(cornerRadius: size * 0.04)
+                    .fill(Theme.foodHi.opacity(0.9))
+                    .frame(width: size * 0.12, height: size * 0.12)
+                    .offset(x: -size * 0.07, y: -size * 0.07))
+                .rotationEffect(.degrees(45))
+        }
+        .frame(width: size, height: size)
+    }
+}
+
+struct SnakeGlyph: View {
+    var size: CGFloat = 26
+    var body: some View {
+        ZStack(alignment: .trailing) {
+            Capsule()
+                .fill(LinearGradient(colors: [Theme.snakeTail, Theme.snakeHead],
+                                     startPoint: .leading, endPoint: .trailing))
+                .frame(width: size * 0.9, height: size * 0.34)
+            Circle().fill(Theme.snakeHead).frame(width: size * 0.56, height: size * 0.56)
+        }
+        .frame(width: size, height: size)
     }
 }

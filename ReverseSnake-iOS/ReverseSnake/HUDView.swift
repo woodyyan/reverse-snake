@@ -1,179 +1,161 @@
 import SwiftUI
 
-/// Dark energy HUD: SCORE / BEST / LENGTH / SPACE / THREAT,
-/// status lamp, state label, score pulse and the threat bar across the bottom.
-struct HUDView: View {
+/// In-game HUD (design v2): pause | centred score | best, plus three mini
+/// stats (length, space, threat). Sound / restart live in the pause sheet,
+/// dash cooldown lives on the player's ring.
+struct GameHUD: View {
     @ObservedObject var engine: GameEngine
     let m: LayoutMetrics
 
-    @State private var pulse = false
     @State private var scoreScale: CGFloat = 1
-    @State private var scoreBright: Double = 0
+    @State private var scoreGlow: Double = 0
+    @State private var lastScore = 0
 
-    private var stateColor: Color {
-        switch engine.phase {
-        case .running, .countdown: return Theme.green
-        case .paused: return Theme.orange
-        case .over: return Theme.danger
-        case .ready: return Color(hex: 0x7189AC)
-        }
-    }
-
-    private var isLive: Bool { engine.phase == .running || engine.phase == .countdown }
+    private var isPaused: Bool { engine.phase == .paused }
+    private var canToggle: Bool { [.running, .countdown, .paused].contains(engine.phase) }
 
     var body: some View {
-        let hud = engine.hud
-        let weights = m.kpiWeights
-        let total = weights.reduce(0, +)
-
-        ZStack(alignment: .bottom) {
-            LinearGradient(colors: [Theme.hudTop, Theme.hudBottom],
-                           startPoint: .top, endPoint: .bottom)
-
-            // Score-cell wash, like .score-cell background
-            GeometryReader { g in
-                LinearGradient(colors: [Theme.blue.opacity(0.20), Color.clear],
-                               startPoint: .leading, endPoint: .trailing)
-                    .frame(width: g.size.width * weights[0] / total * 0.85)
-            }
-
-            // Top scan highlight
-            VStack(spacing: 0) {
-                LinearGradient(stops: [
-                    .init(color: .clear, location: 0),
-                    .init(color: Theme.cyan, location: 0.18),
-                    .init(color: Theme.blue, location: 0.65),
-                    .init(color: .clear, location: 1)
-                ], startPoint: .leading, endPoint: .trailing)
-                .frame(height: 1)
-                .opacity(0.75)
-                Spacer(minLength: 0)
-            }
-
-            // Five KPI cells
-            GeometryReader { g in
-                HStack(alignment: .top, spacing: 0) {
-                    kpi(labelKey: L10n.K.hudScore, subKey: L10n.K.hudSubScore,
-                        value: "\(hud.score)", width: g.size.width * weights[0] / total,
-                        isScore: true, showState: true, score: true, showDivider: true)
-                    kpi(labelKey: L10n.K.hudBest, subKey: L10n.K.hudSubBest,
-                        value: "\(hud.best)", width: g.size.width * weights[1] / total,
-                        showDivider: true)
-                    kpi(labelKey: L10n.K.hudLength, subKey: L10n.K.hudSubLength,
-                        value: "\(hud.length)", width: g.size.width * weights[2] / total,
-                        showDivider: true)
-                    kpi(labelKey: L10n.K.hudSpace, subKey: L10n.K.hudSubSpace,
-                        value: "\(hud.space)%", width: g.size.width * weights[3] / total,
-                        valueColor: hud.space < 30 ? Theme.danger : Theme.hudValue,
-                        showDivider: true)
-                    kpi(labelKey: L10n.K.hudThreat, subKey: L10n.K.hudSubThreat,
-                        value: "\(hud.threat)%", width: g.size.width * weights[4] / total,
-                        showDivider: false)
+        Group {
+            if m.isShortLandscape {
+                HStack(spacing: 8) {
+                    pauseButton
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        L10n.t(L10n.K.hudScore)
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(Theme.text2)
+                        scoreText
+                    }
+                    .fixedSize()
+                    stats
+                    best(alignment: .trailing)
                 }
-            }
-
-            // Through-line threat bar
-            GeometryReader { g in
-                ZStack(alignment: .leading) {
-                    Theme.cyan.opacity(0.08)
-                    LinearGradient(stops: [
-                        .init(color: Theme.cyan, location: 0),
-                        .init(color: Theme.blue, location: 0.55),
-                        .init(color: Theme.orange, location: 1)
-                    ], startPoint: .leading, endPoint: .trailing)
-                    .frame(width: g.size.width * CGFloat(hud.threat) / 100)
-                    .shadow(color: Theme.cyan.opacity(0.65), radius: 12)
+                .frame(height: m.topBarHeight)
+            } else {
+                VStack(spacing: m.rowGap) {
+                    ZStack {
+                        HStack {
+                            pauseButton
+                            Spacer()
+                            best(alignment: .trailing)
+                        }
+                        VStack(spacing: 0) {
+                            L10n.t(L10n.K.hudScore)
+                                .font(.system(size: 11, weight: .semibold))
+                                .tracking(0.8)
+                                .foregroundColor(Theme.text2)
+                            scoreText
+                        }
+                    }
+                    .frame(height: m.topBarHeight)
+                    stats.frame(height: m.statsHeight)
                 }
-            }
-            .frame(height: 3)
-
-            // Glowing spine on the score cell
-            LinearGradient(colors: [Theme.cyan, Theme.blue],
-                           startPoint: .top, endPoint: .bottom)
-                .frame(width: 2)
-                .shadow(color: Theme.cyan.opacity(0.75), radius: 10)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        }
-        .frame(height: m.hudHeight)
-        .clipShape(RoundedRectangle(cornerRadius: m.hudRadius))
-        .overlay(RoundedRectangle(cornerRadius: m.hudRadius).stroke(Theme.hudBorder, lineWidth: 1))
-        .onAppear {
-            withAnimation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true)) {
-                pulse = true
             }
         }
         .onChange(of: engine.hud.score) { newValue in
-            guard newValue > 0 && newValue > lastScore else { lastScore = newValue; return }
-            lastScore = newValue
-            scoreScale = 1.32
-            scoreBright = 0.9
-            withAnimation(.easeOut(duration: 0.38)) {
-                scoreScale = 1
-                scoreBright = 0
-            }
+            defer { lastScore = newValue }
+            guard newValue > 0 && newValue > lastScore else { return }
+            scoreScale = 1.25
+            scoreGlow = 1
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.5)) { scoreScale = 1 }
+            withAnimation(.easeOut(duration: 0.6)) { scoreGlow = 0 }
         }
     }
 
-    @State private var lastScore = 0
-
-    @ViewBuilder
-    private func kpi(labelKey: String, subKey: String, value: String, width: CGFloat,
-                     isScore: Bool = false, showState: Bool = false,
-                     score: Bool = false, valueColor: Color = Theme.hudValue,
-                     showDivider: Bool = false) -> some View {
-        let labSize = m.kpiLabel
-        VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: m.compact ? 3 : 6) {
-                L10n.t(labelKey)
-                    .font(.system(size: labSize, weight: .heavy, design: .monospaced))
-                    .tracking(m.compact ? 0.4 : 1.2)
-                    .foregroundColor(Theme.cyan)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                if !m.compact {
-                    L10n.t(subKey)
-                        .font(.system(size: 9, weight: .semibold))
-                        .foregroundColor(Color(hex: 0x8CA3C2))
-                }
-                if showState {
-                    Spacer(minLength: 0)
-                    if !(m.compact && !m.isShortLandscape) {
-                        L10n.t(engine.hud.stateKey)
-                            .font(.system(size: 8, weight: .heavy, design: .monospaced))
-                            .tracking(1.2)
-                            .foregroundColor(stateColor)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.6)
-                    }
-                    Circle()
-                        .fill(stateColor)
-                        .frame(width: m.compact ? 4 : 6, height: m.compact ? 4 : 6)
-                        .opacity(pulse && isLive ? 0.4 : 1)
-                        .shadow(color: engine.phase == .over ? Theme.danger.opacity(0.8) : .clear,
-                                radius: engine.phase == .over ? 8 : 0)
-                }
-            }
-            .padding(.bottom, m.compact ? 2 : 3)
-
-            Text(value)
-                .font(.system(size: score ? m.kpiScore : m.kpiValue,
-                              weight: .heavy, design: .monospaced))
-                .foregroundColor(score ? Theme.cyan : valueColor)
-                .lineLimit(1)
-                .minimumScaleFactor(0.65)
-                .scaleEffect(score ? scoreScale : 1)
-                .brightness(score ? scoreBright : 0)
-                .shadow(color: score ? Theme.cyan.opacity(0.5) : Theme.cyan.opacity(0.2),
-                        radius: score ? 9 : 8)
+    private var pauseButton: some View {
+        RoundIconButton(systemName: isPaused ? "play.fill" : "pause.fill",
+                        labelKey: isPaused ? L10n.K.controlResume : L10n.K.controlPause,
+                        size: m.roundButton) {
+            if isPaused { engine.resume() } else { engine.pause() }
         }
-        .padding(.top, m.compact ? 5 : 9)
-        .padding(.leading, isScore ? (m.compact ? 9 : 18) : (m.compact ? 4 : 14))
-        .padding(.trailing, 2)
-        .frame(width: width, alignment: .leading)
-        .overlay(alignment: .trailing) {
-            if showDivider {
-                Theme.cyan.opacity(0.10).frame(width: 1)
+        .opacity(canToggle ? 1 : 0.4)
+        .disabled(!canToggle)
+    }
+
+    private var scoreText: some View {
+        let value = Text(verbatim: "\(engine.hud.score)")
+            .font(.rounded(m.scoreFont))
+            .monospacedDigit()
+        return value
+            .foregroundColor(Theme.text)
+            .overlay(value.foregroundColor(Theme.food).opacity(scoreGlow))
+            .scaleEffect(scoreScale)
+            .lineLimit(1)
+    }
+
+    private func best(alignment: HorizontalAlignment) -> some View {
+        VStack(alignment: alignment, spacing: 1) {
+            HStack(spacing: 3) {
+                Image(systemName: "crown.fill")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundColor(Theme.gold)
+                L10n.t(L10n.K.hudBest)
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(Theme.text2)
             }
+            Text(verbatim: "\(engine.hud.best)")
+                .font(.rounded(m.bestFont, .bold))
+                .monospacedDigit()
+                .foregroundColor(Theme.text)
+        }
+        .fixedSize()
+    }
+
+    private var stats: some View {
+        let hud = engine.hud
+        let lowSpace = hud.space < 30
+        return HStack(spacing: 8) {
+            StatChip(labelKey: L10n.K.hudLength, value: "\(hud.length)")
+            StatChip(labelKey: L10n.K.hudSpace, value: "\(hud.space)%",
+                     progress: CGFloat(hud.space) / 100,
+                     barColor: lowSpace ? Theme.danger : Theme.snakeHead, alert: lowSpace)
+            StatChip(labelKey: L10n.K.hudThreat, value: "\(hud.threat)%",
+                     progress: CGFloat(hud.threat) / 100, barColor: Theme.player)
+        }
+    }
+}
+
+/// One mini stat: label, optional micro progress bar, value.
+struct StatChip: View {
+    let labelKey: String
+    let value: String
+    var progress: CGFloat? = nil
+    var barColor: Color = Theme.snakeHead
+    var alert = false
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            content(showBar: true)
+            content(showBar: false)
+        }
+        .padding(.horizontal, 8)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Theme.surface))
+        .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(Theme.hairline, lineWidth: 1))
+        .accessibilityElement(children: .combine)
+    }
+
+    private func content(showBar: Bool) -> some View {
+        HStack(spacing: 5) {
+            L10n.t(labelKey)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(Theme.text2)
+                .lineLimit(1)
+                .fixedSize()
+            if showBar, let progress {
+                Capsule()
+                    .fill(Theme.surface2)
+                    .frame(width: 22, height: 4)
+                    .overlay(alignment: .leading) {
+                        Capsule().fill(barColor).frame(width: 22 * max(0.04, min(1, progress)), height: 4)
+                    }
+            }
+            Spacer(minLength: 2)
+            Text(verbatim: value)
+                .font(.rounded(14, .bold))
+                .monospacedDigit()
+                .foregroundColor(alert ? Theme.danger : Theme.text)
+                .lineLimit(1)
+                .fixedSize()
         }
     }
 }
