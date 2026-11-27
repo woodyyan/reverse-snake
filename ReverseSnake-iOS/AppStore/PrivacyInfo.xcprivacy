@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Snake Feast 隐私清单（草稿，尚未加入 Xcode target）
+  放到 ReverseSnake-iOS/ReverseSnake/PrivacyInfo.xcprivacy，并在 Xcode 勾选 Target Membership = ReverseSnake（Copy Bundle Resources）。
+  - 不追踪、不收集数据（与 App Store Connect「App 隐私」= 不收集数据 一致）
+  - 用到 UserDefaults（最高分 / 音效 / 外观 / 待补交成绩）→ 必须声明 Required Reason API：CA92.1（仅 App 自身读写）
+-->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

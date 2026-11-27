@@ -1,0 +1,323 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Snake Feast · App Store Connect 首次提交资料包</title><style>
+:root{--b:#0A66FF;--bd:#E6E8EC;--t:#1D1D1F;--m:#6B7280;--ok:#0E9F6E;--warn:#D97706;--bad:#DC2626}
+*{box-sizing:border-box}body{margin:0;background:#FAFAFA;color:var(--t);font:15px/1.6 -apple-system,"SF Pro Text","PingFang SC",sans-serif}
+.side{position:fixed;top:0;left:0;bottom:0;width:232px;background:#fff;border-right:1px solid var(--bd);padding:28px 18px;overflow:auto}
+.side .brand{display:flex;gap:10px;align-items:center;margin-bottom:22px}.side .brand img{width:40px;height:40px;border-radius:10px}.side b{font-size:15px}.side small{display:block;color:var(--m);font-size:12px}
+.side a{display:block;padding:7px 10px;border-radius:8px;color:#374151;text-decoration:none;font-size:14px}.side a:hover{background:#F1F5FF;color:var(--b)}
+main{margin-left:232px;padding:40px 48px 120px;max-width:1240px}
+section{margin-bottom:56px;scroll-margin-top:20px}h1{font-size:34px;margin:0 0 6px;letter-spacing:-.01em}h2{font-size:24px;margin:0 0 6px}h3{font-size:17px;margin:22px 0 10px}
+.lead{color:var(--m);margin:0 0 20px;font-size:15px}.kicker{color:var(--b);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.card{background:#fff;border:1px solid var(--bd);border-radius:16px;padding:22px 24px;margin-bottom:16px}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin:22px 0}.kpi{background:#fff;border:1px solid var(--bd);border-radius:14px;padding:16px 18px}.kpi .v{font-size:30px;font-weight:800;color:var(--b);line-height:1.1}.kpi .l{color:var(--m);font-size:13px;margin-top:4px}
+.callout{border-left:4px solid var(--b);background:#EEF4FF;border-radius:10px;padding:14px 18px;margin:14px 0}.callout.w{border-color:var(--warn);background:#FFF7E6}.callout.r{border-color:var(--bad);background:#FEF2F2}.callout.g{border-color:var(--ok);background:#ECFDF5}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--bd);border-radius:14px;overflow:hidden;font-size:14px}th,td{padding:11px 14px;text-align:left;vertical-align:top;border-bottom:1px solid #F0F1F4}th{background:#F7F8FA;font-weight:600;color:#374151}tr:last-child td{border-bottom:0}td:first-child{font-weight:600;white-space:nowrap}
+code{background:#F3F4F6;padding:1px 6px;border-radius:5px;font:13px ui-monospace,Menlo,monospace}
+.pill{display:inline-block;padding:1px 9px;border-radius:999px;font-size:12px;font-weight:600}.p-r{background:#FEE2E2;color:#B91C1C}.p-w{background:#FEF3C7;color:#92400E}.p-g{background:#D1FAE5;color:#065F46}.p-b{background:#DBEAFE;color:#1E40AF}
+.tabs{display:flex;gap:8px;margin:6px 0 16px;position:sticky;top:0;background:#FAFAFA;padding:10px 0;z-index:5}.tb{border:1px solid var(--bd);background:#fff;border-radius:999px;padding:7px 16px;font-size:14px;cursor:pointer}.tb.on{background:var(--b);color:#fff;border-color:var(--b)}
+.lp{display:none}.lp.on{display:block}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{background:#fff;border:1px solid var(--bd);border-radius:14px;padding:12px 16px 14px;margin-bottom:14px}.fh{display:flex;align-items:center;gap:10px;margin-bottom:6px}.fl{font-weight:600;font-size:14px;flex:1}.cnt{font-size:12px;color:var(--m);font-variant-numeric:tabular-nums}.cnt.over{color:var(--bad);font-weight:700}
+.cp{border:0;background:#EEF4FF;color:var(--b);font-weight:600;font-size:12px;padding:5px 12px;border-radius:8px;cursor:pointer}.cp.done{background:var(--ok);color:#fff}
+.fv{margin:0;white-space:pre-wrap;word-break:break-word;font:15px/1.65 -apple-system,"PingFang SC",sans-serif;color:#111}.hint{color:var(--m);font-size:12.5px;margin-top:6px}
+.shots{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}.shots figure{margin:0}.shots img{width:100%;border-radius:12px;border:1px solid var(--bd);display:block}.shots figcaption{font-size:12.5px;margin-top:6px;line-height:1.45}.shots figcaption span{display:block;color:var(--m)}
+.shots.ipad{grid-template-columns:repeat(3,1fr);margin-top:14px;max-width:760px}
+.phone{width:390px;background:#fff;border:1px solid var(--bd);border-radius:28px;padding:18px 16px 20px;box-shadow:0 20px 60px rgba(0,0,0,.08)}
+.sbar{background:#F2F2F7;border-radius:10px;padding:8px 12px;color:#8E8E93;font-size:15px;margin-bottom:14px}
+.res{display:flex;gap:12px;align-items:center}.ic{width:62px;height:62px;border-radius:14px}.meta{flex:1;min-width:0}.nm{font-size:16px;font-weight:600;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.st{color:#8E8E93;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rt{color:#8E8E93;font-size:11px;margin-top:2px}.rt span{margin-left:6px}
+.get{background:#F2F2F7;color:#007AFF;font-weight:700;border-radius:999px;padding:5px 18px;font-size:14px}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px}.three img{width:100%;border-radius:10px;border:1px solid #E5E5EA}
+.flex{display:flex;gap:28px;align-items:flex-start}.flex>div:last-child{flex:1}
+ol.chk{list-style:none;padding:0;margin:0;counter-reset:c}ol.chk li{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:12px 16px 12px 48px;margin-bottom:8px;position:relative;counter-increment:c}ol.chk li:before{content:counter(c);position:absolute;left:14px;top:12px;width:22px;height:22px;border-radius:50%;background:var(--b);color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center}
+ol.chk label{display:flex;gap:8px;align-items:flex-start;cursor:pointer}ol.chk input{margin-top:5px}
+.sb{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.sb div{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:12px}.sb b{color:var(--b);font-size:13px}.sb p{margin:4px 0 0;font-size:13px}
+@media print{.side,.tabs,.cp{display:none}main{margin:0}}
+</style></head><body>
+<aside class="side"><div class="brand"><img src="assets/icon.png"><div><b>Snake Feast</b><small>ASC 首次提交资料包</small></div></div>
+<a href="#s0">0 · 结论与阻断项</a><a href="#s1">1 · 新建 App</a><a href="#s2">2 · App 信息</a><a href="#s3">3 · 文案（三语言）</a><a href="#s4">4 · 搜索结果预览</a><a href="#s5">5 · 截屏</a><a href="#s6">6 · App 预览视频</a><a href="#s7">7 · 合规：年龄分级</a><a href="#s8">8 · 合规：隐私/加密/版权</a><a href="#s9">9 · 定价与供应地区</a><a href="#s10">10 · Game Center</a><a href="#s11">11 · 版本页与审核信息</a><a href="#s12">12 · 提交流程清单</a><a href="#s13">13 · 上线后 ASO</a></aside>
+<main>
+<section id="s0"><div class="kicker">App Store Connect · First Submission</div><h1>Snake Feast 首次上架资料包</h1>
+<p class="lead">Bundle ID <code>com.woodystudio.reversesnake</code> · iOS 16+ · iPhone + iPad · 简中 / 繁中 / 英文 · Game Center 双排行榜 · 免费、无广告、无内购</p>
+<div class="kpis"><div class="kpi"><div class="v">3</div><div class="l">本地化语言，全部字段已填</div></div><div class="kpi"><div class="v">36</div><div class="l">带文案的商店截图（6.9″ + 13″）</div></div><div class="kpi"><div class="v">4+</div><div class="l">预计年龄分级</div></div><div class="kpi"><div class="v">0</div><div class="l">收集的数据类型</div></div><div class="kpi"><div class="v" style="color:var(--bad)">4</div><div class="l">提交前必须处理的阻断项</div></div></div>
+<div class="callout"><b>结论：</b>文案、截图、合规答案都可以直接复制粘贴。提交前还要处理 <b>4 个阻断项</b>（2 个是工程改动，需要你批准后我再改）；另外建议<b>首发先不上架中国大陆</b>，等版号和 ICP 备案齐了再单独开放。</div>
+<table><tr><th style="width:52px">#</th><th style="width:250px">阻断项</th><th>原因 / 做法</th><th style="width:150px">状态</th></tr>
+<tr><td>B1 · 隐私清单 PrivacyInfo.xcprivacy</td><td>代码用了 <code>UserDefaults</code>（Required Reason API）。没有隐私清单的话，上传后会收到 ITMS-91053 警告，严重时会被拒。草稿已经写好：<code>AppStore/PrivacyInfo.xcprivacy</code>（理由代码 CA92.1），放进 target 就行。</td><td><span class="pill p-w">待你批准改工程</span></td></tr>
+<tr><td>B2 · 加密声明</td><td>在 pbxproj 的 Debug/Release 两处加 <code>INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO</code>。加了以后每次上传构建都不用再回答出口合规问题。</td><td><span class="pill p-w">待你批准改工程</span></td></tr>
+<tr><td>B3 · 隐私政策 / 技术支持网址</td><td>这两个网址必填，而且必须能公开访问。双语页面已经生成在 <code>AppStore/web/</code>，把 <code>【开发者名称】【邮箱】</code> 替换掉以后部署到 GitHub Pages 根目录。</td><td><span class="pill p-r">待部署 + 填邮箱</span></td></tr>
+<tr><td>B4 · Game Center 配置</td><td>构建带有 Game Center 权限，所以版本页必须勾选 Game Center 并关联排行榜，否则提交不了审核。需要在 ASC 里先建好两个排行榜（见第 10 节）。</td><td><span class="pill p-r">ASC 内操作</span></td></tr>
+</table>
+<h3>需要你拍板的 3 个决策</h3>
+<table><tr><th style="width:200px">决策</th><th>建议</th><th style="width:330px">备选</th></tr>
+<tr><td>D1 · 首发地区</td><td><b>全球 173 个地区，排除中国大陆和越南。</b>国区游戏必须有网络游戏出版物号（版号）和 ICP 备案号；越南游戏也需要当地许可。</td><td>等版号下来再全球同步首发，但会拖慢验证节奏</td></tr>
+<tr><td>D2 · 版本号</td><td>保留 <code>1.6</code> 也能提交。如果想让商店显示「1.0 首发」，就把 MARKETING_VERSION 改成 1.0。</td><td>1.6 与网页版对齐；商店里看不到历史版本，影响很小</td></tr>
+<tr><td>D3 · 主要语言</td><td><b>英文（美国）</b>。没有本地化的地区都会回退到主要语言，全球首发用英文最稳。</td><td>如果先只做华语市场，可以选简体中文</td></tr>
+</table></section>
+
+<section id="s1"><div class="kicker">Step 1</div><h2>新建 App（我的 App › ＋ › 新建 App）</h2><p class="lead">这一页提交后，Bundle ID 和 SKU 都不能再改。</p>
+<table><tr><th>字段</th><th>填写</th><th>说明</th></tr>
+<tr><td>平台</td><td>iOS</td><td>iPad 已包含在 iOS 里</td></tr>
+<tr><td>名称</td><td>Snake Feast: Reverse Snake</td><td>名称全局唯一。已有「Snake Feast Gulp Arcade Games」，但不冲突；如果提示被占用，备选「Snake Feast – Be the Prey」</td></tr>
+<tr><td>主要语言</td><td>英文（美国）</td><td>见 D3</td></tr>
+<tr><td>套装 ID</td><td>com.woodystudio.reversesnake</td><td>需要先在开发者后台注册 App ID 并勾选 Game Center（Xcode 自动签名一般会自动同步）</td></tr>
+<tr><td>SKU</td><td>SNAKEFEAST001</td><td>仅内部使用，不对外显示</td></tr>
+<tr><td>用户访问权限</td><td>完全访问权限</td><td></td></tr>
+</table></section>
+
+<section id="s2"><div class="kicker">Step 2</div><h2>App 信息页（App Information）</h2><p class="lead">名称和副标题在这一页，按语言分别填（内容见第 3 节）。</p>
+<table><tr><th>字段</th><th>填写</th><th>说明</th></tr>
+<tr><td>类别 › 主要</td><td>游戏 › 子类别：<b>街机</b>、<b>休闲</b></td><td>游戏最多选 2 个子类别；和 README 里约定的「街机」一致，再加上流量更大的「休闲」</td></tr>
+<tr><td>类别 › 次要</td><td>可不选（或选「娱乐」）</td><td>对排名影响很小</td></tr>
+<tr><td>内容版权</td><td><b>否</b>：不包含、展示或访问第三方内容</td><td>排行榜昵称来自 Apple Game Center，不属于第三方内容授权问题</td></tr>
+<tr><td>年龄分级</td><td>按第 7 节回答，结果为 <b>4+</b></td><td></td></tr>
+<tr><td>隐私政策网址</td><td>https://woodyyan.github.io/reverse-snake/privacy.html</td><td>每个语言都可以单独填，填同一个双语页面就行</td></tr>
+<tr><td>用户隐私选择网址</td><td>留空</td><td>可选项</td></tr>
+<tr><td>《数字服务法》(DSA)</td><td>个人开发、免费无变现 → <b>非交易商</b>；以公司名义经营 → 交易商（地址、电话会公开显示）</td><td>只要在欧盟上架就必须回答，否则欧盟地区无法供应</td></tr>
+<tr><td>中国大陆：ICP 备案号 / 游戏出版物号</td><td>首发不填（D1 已排除国区）</td><td>开放国区时：上传 ISBN 核发单或批复文件 + 营业执照；ICP 备案号以及简体中文 App 信息必须和工信部备案一致</td></tr>
+<tr><td>越南游戏许可</td><td>不填（已排除越南）</td><td></td></tr>
+</table>
+<div class="callout w"><b>国区提前规划：</b>版号批文上的游戏名称要和国区商店名称一致。建议现在就把中文名定为「反向贪吃蛇」或「Snake Feast：反向贪吃蛇」，版号、软著、ICP 备案统一用这一个名称。另外，带联网排行榜的游戏申报类型（网络游戏 / 单机）请向版号代理确认，这会影响实名和防沉迷要求。</div></section>
+
+<section id="s3"><div class="kicker">Step 3</div><h2>商店文案（三语言，可一键复制）</h2><p class="lead">字数实时统计，超过上限会标红。上限：名称 30、副标题 30、推广文本 170、关键词 100、描述 4000。</p>
+<div class="tabs"><button class="tb on" data-loc="en-US">英文（美国）· 主要语言</button><button class="tb " data-loc="zh-Hans">简体中文</button><button class="tb " data-loc="zh-Hant">繁体中文（港澳台）</button></div><div class="lp on" data-loc="en-US">
+<div class="grid2"><div class="field"><div class="fh"><span class="fl">名称 Name（App 信息页）</span><span class="cnt" data-for="f0" data-max="30"></span><button class="cp" data-for="f0">复制</button></div><pre id="f0" class="fv">Snake Feast: Reverse Snake</pre></div><div class="field"><div class="fh"><span class="fl">副标题 Subtitle（App 信息页）</span><span class="cnt" data-for="f1" data-max="30"></span><button class="cp" data-for="f1">复制</button></div><pre id="f1" class="fv">Dodge &amp; Dash Arcade Escape</pre></div></div>
+<div class="field"><div class="fh"><span class="fl">推广文本 Promotional Text（可随时改，无需审核）</span><span class="cnt" data-for="f2" data-max="170"></span><button class="cp" data-for="f2">复制</button></div><pre id="f2" class="fv">The classic snake game, flipped: you're the prey. Swipe to dodge, tap to dash, grab golden seeds while the snake grows longer and faster. How long can you last?</pre></div>
+<div class="field"><div class="fh"><span class="fl">关键词 Keywords（逗号分隔，不加空格）</span><span class="cnt" data-for="f3" data-max="100"></span><button class="cp" data-for="f3">复制</button></div><pre id="f3" class="fv">casual,offline,classic,retro,chase,survival,reflex,maze,puzzle,highscore,minimal,prey,worm,hunt,fun</pre><div class="hint">已排除名称/副标题中出现过的词（Apple 会自动合并索引），也未使用任何竞品商标词。</div></div>
+<div class="field"><div class="fh"><span class="fl">描述 Description</span><span class="cnt" data-for="f4" data-max="4000"></span><button class="cp" data-for="f4">复制</button></div><pre id="f4" class="fv">This time, you're the prey.
+
+Snake Feast flips the classic snake game. You're a glowing orange dot, and a smart snake is hunting you. Grab golden seeds to score — but every seed makes the snake 2 segments longer and a little faster, and your room to run keeps shrinking. How long can you last?
+
+HOW TO PLAY
+• Swipe to turn — chain swipes for tight cornering
+• Tap to dash 2 cells forward (2.6s cooldown) — your emergency escape
+• Walls only block you. Touch the snake's body or get caught by its head, and the run is over
+
+WHY YOU'LL KEEP PLAYING
+• A built-in difficulty curve: score → longer, faster snake → less space
+• A hunter you can shake off: the snake pathfinds toward you but turns with inertia — a sharp turn is your chance
+• Runs usually last under two minutes — perfect for a quick break
+• Live stats for snake length, free space and threat level
+
+GLOBAL LEADERBOARDS
+• Game Center all-time, friends and weekly leaderboards
+• See your global rank right after each run; offline scores sync automatically when you're back online
+• Prefer not to sign in? Your personal best is always saved on device
+
+CRAFTED DETAILS
+• Daylight and Nocturne themes — follow the system or choose your own
+• Tuned haptics and synthesized sound effects for dashes, scores and crashes
+• Made for iPhone and iPad, portrait and landscape, Split View ready
+• English, Simplified Chinese and Traditional Chinese
+
+CLEAN AND SIMPLE
+• No ads. No in-app purchases. No account required
+• We don't collect any personal data
+• Plays offline (leaderboards need a connection)
+
+Ready? You're the one being hunted.</pre></div>
+<div class="grid2"><div class="field"><div class="fh"><span class="fl">技术支持网址 Support URL</span><span class="cnt" data-for="f5" data-max=""></span><button class="cp" data-for="f5">复制</button></div><pre id="f5" class="fv">https://woodyyan.github.io/reverse-snake/support.html</pre><div class="hint">待部署：把 AppStore/web/ 下 3 个文件放到 Pages 根目录</div></div><div class="field"><div class="fh"><span class="fl">营销网址 Marketing URL（可选）</span><span class="cnt" data-for="f6" data-max=""></span><button class="cp" data-for="f6">复制</button></div><pre id="f6" class="fv">https://woodyyan.github.io/reverse-snake/</pre><div class="hint">可留空；如填，需确认网页版可访问</div></div></div>
+</div><div class="lp " data-loc="zh-Hans">
+<div class="grid2"><div class="field"><div class="fh"><span class="fl">名称 Name（App 信息页）</span><span class="cnt" data-for="f7" data-max="30"></span><button class="cp" data-for="f7">复制</button></div><pre id="f7" class="fv">Snake Feast：反向贪吃蛇</pre></div><div class="field"><div class="fh"><span class="fl">副标题 Subtitle（App 信息页）</span><span class="cnt" data-for="f8" data-max="30"></span><button class="cp" data-for="f8">复制</button></div><pre id="f8" class="fv">这次你是猎物 · 休闲躲避小游戏</pre></div></div>
+<div class="field"><div class="fh"><span class="fl">推广文本 Promotional Text（可随时改，无需审核）</span><span class="cnt" data-for="f9" data-max="170"></span><button class="cp" data-for="f9">复制</button></div><pre id="f9" class="fv">经典贪吃蛇反过来玩：这次你是猎物！滑动躲蛇、轻点冲刺，每吃一颗金种，蛇就更长更快。冲上 Game Center 全球榜，看看你能撑到几分。</pre></div>
+<div class="field"><div class="fh"><span class="fl">关键词 Keywords（逗号分隔，不加空格）</span><span class="cnt" data-for="f10" data-max="100"></span><button class="cp" data-for="f10">复制</button></div><pre id="f10" class="fv">贪食蛇,蛇,益智,街机,单机,离线,经典,逃脱,逃跑,追逐,反应,手速,挑战,高分,排行榜,解压,复古,极简,走位,冲刺,无广告,好玩,打发时间,迷宫,策略,金种,反应力,专注,烧脑,上瘾</pre><div class="hint">已排除名称/副标题中出现过的词（Apple 会自动合并索引），也未使用任何竞品商标词。</div></div>
+<div class="field"><div class="fh"><span class="fl">描述 Description</span><span class="cnt" data-for="f11" data-max="4000"></span><button class="cp" data-for="f11">复制</button></div><pre id="f11" class="fv">这次，你是猎物。
+
+Snake Feast 把经典贪吃蛇反过来玩：你是一颗橙色光点，一条会自动寻路的蛇正在追你。吃下金种就能得分——但每吃一颗，蛇就长 2 节、追得更快，你能跑的空间也越来越小。你能撑到几分？
+
+【怎么玩】
+• 滑动转向：往哪滑就往哪走，可连续拐弯
+• 轻点冲刺：瞬间前冲 2 格，冷却 2.6 秒，关键时刻救命
+• 撞墙不会输；碰到蛇身或被蛇头追上，本局结束
+
+【为什么停不下来】
+• 越吃越难：得分 → 蛇变长变快 → 空间被压缩，每一局都有新的紧张感
+• 能甩开的追击者：蛇会寻路追你，但转向有惯性——急转弯就是你的机会
+• 一局通常不到 2 分钟，等车、排队、睡前都能来一把
+• 实时显示蛇长、剩余空间与追击强度，局势一目了然
+
+【全球排行榜】
+• 接入 Game Center：全球榜、好友榜、每周榜
+• 结算即显示全球名次与提升幅度；离线成绩联网后自动补交
+• 不想登录也没关系，本机最高分照样保存
+
+【用心的细节】
+• 晨纸（浅色）与夜行（深色）双主题，跟随系统或手动切换
+• 分级震动反馈与合成音效，冲刺、得分、失败手感分明
+• 适配 iPhone 与 iPad，支持横竖屏与分屏
+• 支持简体中文、繁体中文、英文
+
+【干净纯粹】
+• 无广告、无内购、无需注册
+• 开发者不收集任何个人数据
+• 无网络也能玩（排行榜需联网）
+
+准备好了吗？你是被追的那一个。</pre></div>
+<div class="grid2"><div class="field"><div class="fh"><span class="fl">技术支持网址 Support URL</span><span class="cnt" data-for="f12" data-max=""></span><button class="cp" data-for="f12">复制</button></div><pre id="f12" class="fv">https://woodyyan.github.io/reverse-snake/support.html</pre><div class="hint">待部署：把 AppStore/web/ 下 3 个文件放到 Pages 根目录</div></div><div class="field"><div class="fh"><span class="fl">营销网址 Marketing URL（可选）</span><span class="cnt" data-for="f13" data-max=""></span><button class="cp" data-for="f13">复制</button></div><pre id="f13" class="fv">https://woodyyan.github.io/reverse-snake/</pre><div class="hint">可留空；如填，需确认网页版可访问</div></div></div>
+</div><div class="lp " data-loc="zh-Hant">
+<div class="grid2"><div class="field"><div class="fh"><span class="fl">名称 Name（App 信息页）</span><span class="cnt" data-for="f14" data-max="30"></span><button class="cp" data-for="f14">复制</button></div><pre id="f14" class="fv">Snake Feast：反向貪食蛇</pre></div><div class="field"><div class="fh"><span class="fl">副标题 Subtitle（App 信息页）</span><span class="cnt" data-for="f15" data-max="30"></span><button class="cp" data-for="f15">复制</button></div><pre id="f15" class="fv">這次你是獵物・休閒躲避小遊戲</pre></div></div>
+<div class="field"><div class="fh"><span class="fl">推广文本 Promotional Text（可随时改，无需审核）</span><span class="cnt" data-for="f16" data-max="170"></span><button class="cp" data-for="f16">复制</button></div><pre id="f16" class="fv">經典貪食蛇反過來玩：這次你是獵物！滑動躲蛇、輕點衝刺，每吃一顆金種，蛇就更長更快。衝上 Game Center 全球榜，看看你能撐到幾分。</pre></div>
+<div class="field"><div class="fh"><span class="fl">关键词 Keywords（逗号分隔，不加空格）</span><span class="cnt" data-for="f17" data-max="100"></span><button class="cp" data-for="f17">复制</button></div><pre id="f17" class="fv">貪吃蛇,蛇,益智,街機,單機,離線,經典,逃脫,逃跑,追逐,反應,手速,挑戰,高分,排行榜,紓壓,復古,極簡,走位,衝刺,無廣告,好玩,打發時間,迷宮,策略,金種,反應力,專注,燒腦,上癮</pre><div class="hint">已排除名称/副标题中出现过的词（Apple 会自动合并索引），也未使用任何竞品商标词。</div></div>
+<div class="field"><div class="fh"><span class="fl">描述 Description</span><span class="cnt" data-for="f18" data-max="4000"></span><button class="cp" data-for="f18">复制</button></div><pre id="f18" class="fv">這次，你是獵物。
+
+Snake Feast 把經典貪食蛇反過來玩：你是一顆橘色光點，一條會自動尋路的蛇正在追你。吃下金種就能得分——但每吃一顆，蛇就長 2 節、追得更快，你能跑的空間也越來越小。你能撐到幾分？
+
+【怎麼玩】
+• 滑動轉向：往哪滑就往哪走，可連續轉彎
+• 輕點衝刺：瞬間前衝 2 格，冷卻 2.6 秒，關鍵時刻救命
+• 撞牆不會輸；碰到蛇身或被蛇頭追上，本局結束
+
+【為什麼停不下來】
+• 越吃越難：得分 → 蛇變長變快 → 空間被壓縮，每一局都有新的緊張感
+• 甩得掉的追擊者：蛇會尋路追你，但轉向有慣性——急轉彎就是你的機會
+• 一局通常不到 2 分鐘，等車、排隊、睡前都能來一場
+• 即時顯示蛇長、剩餘空間與追擊強度，局勢一目了然
+
+【全球排行榜】
+• 支援 Game Center：全球榜、好友榜、每週榜
+• 結算即顯示全球名次與進步幅度；離線成績連網後自動補交
+• 不想登入也沒關係，本機最高分照樣保存
+
+【用心的細節】
+• 晨紙（淺色）與夜行（深色）雙主題，跟隨系統或手動切換
+• 分級震動回饋與合成音效，衝刺、得分、失敗手感分明
+• 支援 iPhone 與 iPad，直式、橫式與分割畫面
+• 支援簡體中文、繁體中文、英文
+
+【乾淨純粹】
+• 無廣告、無內購、無需註冊
+• 開發者不收集任何個人資料
+• 沒有網路也能玩（排行榜需連網）
+
+準備好了嗎？你是被追的那一個。</pre></div>
+<div class="grid2"><div class="field"><div class="fh"><span class="fl">技术支持网址 Support URL</span><span class="cnt" data-for="f19" data-max=""></span><button class="cp" data-for="f19">复制</button></div><pre id="f19" class="fv">https://woodyyan.github.io/reverse-snake/support.html</pre><div class="hint">待部署：把 AppStore/web/ 下 3 个文件放到 Pages 根目录</div></div><div class="field"><div class="fh"><span class="fl">营销网址 Marketing URL（可选）</span><span class="cnt" data-for="f20" data-max=""></span><button class="cp" data-for="f20">复制</button></div><pre id="f20" class="fv">https://woodyyan.github.io/reverse-snake/</pre><div class="hint">可留空；如填，需确认网页版可访问</div></div></div>
+</div>
+<div class="callout"><b>关键词策略：</b>Apple 会把「名称 + 副标题 + 关键词」放在一起组合匹配。所以名称里已有的 Snake / 贪吃蛇和副标题里的休闲 / 躲避，都没有在关键词里重复，100 个字符全部用来覆盖新词。繁中关键词里补了「貪吃蛇」，简中补了「贪食蛇」，用来覆盖两岸的叫法差异。<b>注意：</b>不要写 slither、贪吃蛇大作战之类的竞品商标词，这类词会触发 2.3.7 被拒。</div></section>
+
+<section id="s4"><div class="kicker">Search Result</div><h2>标题与搜索结果预览</h2><p class="lead">搜索结果卡片只显示：图标、名称、副标题、评分，以及<b>前 3 张竖屏截图</b>。用户 1 秒内就决定点不点，所以前 3 张截图和副标题最关键。</p>
+<div class="tabs"><button class="tb on" data-loc="en-US">英文（美国）· 主要语言</button><button class="tb " data-loc="zh-Hans">简体中文</button><button class="tb " data-loc="zh-Hant">繁体中文（港澳台）</button></div><div class="flex"><div><div class="lp on" data-loc="en-US"><div class="phone"><div class="sbar"><span>⌕</span> snake game</div>
+<div class="res"><img class="ic" src="assets/icon.png"><div class="meta"><div class="nm">Snake Feast: Reverse Snake</div><div class="st">Dodge &amp; Dash Arcade Escape</div><div class="rt">★★★★★ <span>Games</span></div></div><div class="get">Get</div></div>
+<div class="three"><img src="screenshots/en-US/iphone-6.9/01-hero-prey.jpg"><img src="screenshots/en-US/iphone-6.9/02-controls.jpg"><img src="screenshots/en-US/iphone-6.9/03-difficulty.jpg"></div></div></div><div class="lp " data-loc="zh-Hans"><div class="phone"><div class="sbar"><span>⌕</span> 贪吃蛇</div>
+<div class="res"><img class="ic" src="assets/icon.png"><div class="meta"><div class="nm">Snake Feast：反向贪吃蛇</div><div class="st">这次你是猎物 · 休闲躲避小游戏</div><div class="rt">★★★★★ <span>游戏</span></div></div><div class="get">获取</div></div>
+<div class="three"><img src="screenshots/zh-Hans/iphone-6.9/01-hero-prey.jpg"><img src="screenshots/zh-Hans/iphone-6.9/02-controls.jpg"><img src="screenshots/zh-Hans/iphone-6.9/03-difficulty.jpg"></div></div></div><div class="lp " data-loc="zh-Hant"><div class="phone"><div class="sbar"><span>⌕</span> 貪食蛇</div>
+<div class="res"><img class="ic" src="assets/icon.png"><div class="meta"><div class="nm">Snake Feast：反向貪食蛇</div><div class="st">這次你是獵物・休閒躲避小遊戲</div><div class="rt">★★★★★ <span>游戏</span></div></div><div class="get">取得</div></div>
+<div class="three"><img src="screenshots/zh-Hant/iphone-6.9/01-hero-prey.jpg"><img src="screenshots/zh-Hant/iphone-6.9/02-controls.jpg"><img src="screenshots/zh-Hant/iphone-6.9/03-difficulty.jpg"></div></div></div></div><div>
+<table><tr><th>元素</th><th>设计意图</th></tr>
+<tr><td>名称</td><td>品牌 <b>Snake Feast</b> 放前面保持一致，后面接品类词 Reverse Snake / 反向贪吃蛇，用户一眼就知道是什么游戏，也能吃到「贪吃蛇」的搜索量</td><td></td></tr>
+<tr><td>副标题</td><td>前半句讲卖点（你是猎物），后半句放高频品类词（休闲 / 躲避 / 小游戏）</td><td></td></tr>
+<tr><td>截图 1–3</td><td>① 反转卖点 → ② 操作简单 → ③ 越玩越难 + 全球名次。三张连起来读就是一句完整的话</td><td></td></tr>
+<tr><td>截断风险</td><td>名称过长时，不同机型会换行或加省略号，所以<b>最重要的信息放在前约 20 个字符</b>：品牌在前、品类词紧随其后。副标题按单行设计，三种语言都控制在 26 个字符以内</td><td></td></tr>
+<tr><td>评分</td><td>新 App 刚上线没有评分。上线后建议接入系统评分弹窗（见第 13 节）</td><td></td></tr>
+</table></div></div></section>
+
+<section id="s5"><div class="kicker">Screenshots</div><h2>截屏（已生成，直接上传）</h2><p class="lead">6.9″ iPhone 1320×2868 和 13″ iPad 2064×2752 是<b>只需上传的两档</b>，其余尺寸由 Apple 自动缩放。JPEG 格式、无透明通道，状态栏统一为 9:41、满格信号、满电。</p>
+<div class="tabs"><button class="tb on" data-loc="en-US">英文（美国）· 主要语言</button><button class="tb " data-loc="zh-Hans">简体中文</button><button class="tb " data-loc="zh-Hant">繁体中文（港澳台）</button></div><div class="lp on" data-loc="en-US"><div class="shots"><figure><img loading="lazy" src="screenshots/en-US/iphone-6.9/01-hero-prey.jpg"><figcaption><b>1. This time, you're the prey</b><span>Hero：一句话讲清反转卖点；进行中画面最有张力</span></figcaption></figure><figure><img loading="lazy" src="screenshots/en-US/iphone-6.9/02-controls.jpg"><figcaption><b>2. Swipe to turn. Tap to dash.</b><span>操作门槛：打消“难不难上手”的顾虑</span></figcaption></figure><figure><img loading="lazy" src="screenshots/en-US/iphone-6.9/03-difficulty.jpg"><figcaption><b>3. Every bite makes it faster</b><span>核心循环：负反馈难度 + 新纪录 + 全球名次</span></figcaption></figure><figure><img loading="lazy" src="screenshots/en-US/iphone-6.9/04-leaderboard.jpg"><figcaption><b>4. Climb the global leaderboard</b><span>社交竞争：领奖台 + 我的名次，驱动重玩</span></figcaption></figure><figure><img loading="lazy" src="screenshots/en-US/iphone-6.9/05-themes.jpg"><figcaption><b>5. Light or dark, your call</b><span>主题展示：浅色版打破整组暗色节奏</span></figcaption></figure><figure><img loading="lazy" src="screenshots/en-US/iphone-6.9/06-trust.jpg"><figcaption><b>6. No ads. No IAP. Plays offline.</b><span>信任收尾：无广告/无内购是休闲游戏强转化点</span></figcaption></figure></div>
+<div class="shots ipad"><figure><img loading="lazy" src="screenshots/en-US/ipad-13/01-hero-prey.jpg"></figure><figure><img loading="lazy" src="screenshots/en-US/ipad-13/02-controls.jpg"></figure><figure><img loading="lazy" src="screenshots/en-US/ipad-13/03-difficulty.jpg"></figure></div></div><div class="lp " data-loc="zh-Hans"><div class="shots"><figure><img loading="lazy" src="screenshots/zh-Hans/iphone-6.9/01-hero-prey.jpg"><figcaption><b>1. 这次，你是猎物</b><span>Hero：一句话讲清反转卖点；进行中画面最有张力</span></figcaption></figure><figure><img loading="lazy" src="screenshots/zh-Hans/iphone-6.9/02-controls.jpg"><figcaption><b>2. 滑动转向，轻点冲刺</b><span>操作门槛：打消“难不难上手”的顾虑</span></figcaption></figure><figure><img loading="lazy" src="screenshots/zh-Hans/iphone-6.9/03-difficulty.jpg"><figcaption><b>3. 吃得越多，蛇越快</b><span>核心循环：负反馈难度 + 新纪录 + 全球名次</span></figcaption></figure><figure><img loading="lazy" src="screenshots/zh-Hans/iphone-6.9/04-leaderboard.jpg"><figcaption><b>4. 冲上全球排行榜</b><span>社交竞争：领奖台 + 我的名次，驱动重玩</span></figcaption></figure><figure><img loading="lazy" src="screenshots/zh-Hans/iphone-6.9/05-themes.jpg"><figcaption><b>5. 浅色深色，随你切换</b><span>主题展示：浅色版打破整组暗色节奏</span></figcaption></figure><figure><img loading="lazy" src="screenshots/zh-Hans/iphone-6.9/06-trust.jpg"><figcaption><b>6. 无广告 · 无内购 · 可离线</b><span>信任收尾：无广告/无内购是休闲游戏强转化点</span></figcaption></figure></div>
+<div class="shots ipad"><figure><img loading="lazy" src="screenshots/zh-Hans/ipad-13/01-hero-prey.jpg"></figure><figure><img loading="lazy" src="screenshots/zh-Hans/ipad-13/02-controls.jpg"></figure><figure><img loading="lazy" src="screenshots/zh-Hans/ipad-13/03-difficulty.jpg"></figure></div></div><div class="lp " data-loc="zh-Hant"><div class="shots"><figure><img loading="lazy" src="screenshots/zh-Hant/iphone-6.9/01-hero-prey.jpg"><figcaption><b>1. 這次，你是獵物</b><span>Hero：一句话讲清反转卖点；进行中画面最有张力</span></figcaption></figure><figure><img loading="lazy" src="screenshots/zh-Hant/iphone-6.9/02-controls.jpg"><figcaption><b>2. 滑動轉向，輕點衝刺</b><span>操作门槛：打消“难不难上手”的顾虑</span></figcaption></figure><figure><img loading="lazy" src="screenshots/zh-Hant/iphone-6.9/03-difficulty.jpg"><figcaption><b>3. 吃得越多，蛇越快</b><span>核心循环：负反馈难度 + 新纪录 + 全球名次</span></figcaption></figure><figure><img loading="lazy" src="screenshots/zh-Hant/iphone-6.9/04-leaderboard.jpg"><figcaption><b>4. 衝上全球排行榜</b><span>社交竞争：领奖台 + 我的名次，驱动重玩</span></figcaption></figure><figure><img loading="lazy" src="screenshots/zh-Hant/iphone-6.9/05-themes.jpg"><figcaption><b>5. 淺色深色，隨你切換</b><span>主题展示：浅色版打破整组暗色节奏</span></figcaption></figure><figure><img loading="lazy" src="screenshots/zh-Hant/iphone-6.9/06-trust.jpg"><figcaption><b>6. 無廣告・無內購・可離線</b><span>信任收尾：无广告/无内购是休闲游戏强转化点</span></figcaption></figure></div>
+<div class="shots ipad"><figure><img loading="lazy" src="screenshots/zh-Hant/ipad-13/01-hero-prey.jpg"></figure><figure><img loading="lazy" src="screenshots/zh-Hant/ipad-13/02-controls.jpg"></figure><figure><img loading="lazy" src="screenshots/zh-Hant/ipad-13/03-difficulty.jpg"></figure></div></div>
+<table style="margin-top:16px"><tr><th>目录</th><th>内容</th></tr>
+<tr><td>AppStore/screenshots/&lt;语言&gt;/iphone-6.9/</td><td>6 张，按 01–06 顺序上传（上传后可拖动调整顺序）</td><td></td></tr>
+<tr><td>AppStore/screenshots/&lt;语言&gt;/ipad-13/</td><td>6 张，同一套文案的 iPad 版</td><td></td></tr>
+<tr><td>AppStore/screenshots-raw/</td><td>42 张无文案原图（3 语言 × 2 设备 × 7 场景，含倒计时）。之后做 A/B 测试或自定义产品页可以直接用</td><td></td></tr>
+</table>
+<div class="callout w"><b>注意：</b>排行榜截图里的玩家数据是 DEBUG 模式下的示例数据，用来展示功能，属于行业常规做法。如果想更稳妥，可以等真实榜单有数据后再更换（截图只能跟随新版本一起修改）。</div></section>
+
+<section id="s6"><div class="kicker">App Preview</div><h2>App 预览视频（可选，建议首发就做）</h2><p class="lead">预览视频会替代第 1 张截图在搜索结果里自动静音播放，对动作类游戏的转化提升最明显。<b>它和截图一样，只能随新版本一起修改</b>，所以想要的话最好首发一起提交。</p>
+<div class="sb"><div><b>0–3s 钩子</b><p>蛇头逼近橙点，紧急急转弯甩开。<br>字幕：这次，你是猎物</p></div><div><b>3–9s 操作</b><p>连续滑动转弯 + 冲刺残影穿过空隙。<br>字幕：滑动转向 · 轻点冲刺</p></div><div><b>9–17s 循环</b><p>连吃 3 颗金种：+1 金环，蛇变长，SPACE 下降。<br>字幕：每吃一颗，蛇长 2 节</p></div><div><b>17–23s 高潮</b><p>险些被追上 → 被抓 → 结算卡：新纪录 + 全球名次。<br>字幕：冲上全球榜</p></div><div><b>23–28s 收尾</b><p>深浅主题切换 → 图标 + Snake Feast。<br>字幕：无广告 · 现在开玩</p></div></div>
+<table style="margin-top:14px"><tr><th>规格</th><th>iPhone 6.9″</th><th>iPad 13″</th></tr>
+<tr><td>分辨率（竖屏）</td><td>886 × 1920</td><td>1200 × 1600</td></tr>
+<tr><td>时长 / 帧率</td><td>15–30 秒，≤30 fps</td><td>同左</td></tr>
+<tr><td>格式</td><td>H.264 .mp4/.mov，≤500 MB，<b>必须带音轨</b>（可以是静音轨）</td><td>同左</td></tr>
+<tr><td>内容规则</td><td>只能使用 App 内实际录屏画面；可以加字幕，不能出现手、设备外框、其他 App 的画面</td><td>同左</td></tr>
+<tr><td>数量</td><td>每种语言最多 3 段；建议只做 1 段英文版，三种语言共用</td><td></td></tr>
+</table>
+<h3>录制与转码</h3><pre class="card" style="white-space:pre-wrap;font:13px/1.6 ui-monospace,Menlo,monospace;margin:0"># 1) 真机录屏（控制中心 › 屏幕录制）或者在模拟器里用鼠标操作录制：
+xcrun simctl io C9273B4D-E587-45F4-9352-CA00D8ADD0C8 recordVideo --codec=h264 raw.mov   # iPhone 16 Pro Max，Ctrl+C 结束
+# 2) 剪辑到 25–28 秒并加字幕（iMovie / 剪映 都可以），导出 raw-cut.mov
+# 3) 转成 ASC 规格（需要先 brew install ffmpeg），同时补一条静音音轨：
+ffmpeg -i raw-cut.mov -f lavfi -i anullsrc=r=44100:cl=stereo -shortest \
+  -vf "scale=886:1920:force_original_aspect_ratio=decrease,pad=886:1920:(ow-iw)/2:(oh-ih)/2,fps=30" \
+  -c:v libx264 -profile:v high -pix_fmt yuv420p -b:v 10M -c:a aac -b:a 256k preview-iphone.mp4</pre></section>
+
+<section id="s7"><div class="kicker">Compliance</div><h2>年龄分级问卷（2025 新版）</h2><p class="lead">在 App 信息 › 年龄分级 › 编辑。以下全部按「无 / 否」回答，预计结果 <b>4+</b>（各地区分级可能略有差异）。</p>
+<table><tr><th>分组</th><th>问题</th><th>回答</th><th>依据</th></tr>
+<tr><td>App 内控制</td><td>家长控制 / 年龄确认机制</td><td>否</td><td>没有这类功能</td></tr>
+<tr><td>功能</td><td>不受限制的网页访问</td><td>否</td><td>没有内置浏览器、没有外链</td></tr>
+<tr><td></td><td>用户生成内容 / 社交媒体 / 消息与聊天</td><td>否</td><td>只有 Apple Game Center 排行榜，没有自建社交和聊天</td></tr>
+<tr><td></td><td>广告</td><td>否</td><td>没有广告 SDK</td></tr>
+<tr><td>医疗健康</td><td>医疗或治疗信息 / 健康与保健主题</td><td>无</td><td></td></tr>
+<tr><td>暴力</td><td>卡通或幻想暴力 / 写实暴力 / 长时间写实暴力 / 枪支武器</td><td>无</td><td>抽象的点和线追逐，没有攻击和血腥画面</td></tr>
+<tr><td>成熟主题</td><td>恐怖惊悚 / 成熟或暗示性主题 / 粗俗幽默 / 脏话 / 烟酒药物</td><td>无</td><td>追逐只带来紧张感，不属于恐怖内容</td></tr>
+<tr><td>性内容</td><td>性内容或裸露（含写实/图形化）</td><td>无</td><td></td></tr>
+<tr><td>赌博</td><td>模拟赌博 / 真实赌博 / 竞赛 / 开箱</td><td>无 / 否</td><td>排行榜没有奖品，不算竞赛；没有付费随机奖励</td></tr>
+</table></section>
+
+<section id="s8"><div class="kicker">Compliance</div><h2>App 隐私、出口合规、内容版权</h2>
+<table><tr><th style="width:190px">项目</th><th>填写</th><th>依据</th></tr>
+<tr><td>App 隐私 › 数据收集</td><td><b>否，我们不从此 App 中收集数据</b>（Data Not Collected）</td><td>没有服务器、没有统计和广告 SDK。Game Center 的数据由 Apple 收集，按 Apple 规则<b>不需要由开发者披露</b>；只在本机处理的数据也不算「收集」</td></tr>
+<tr><td>隐私清单</td><td>PrivacyInfo.xcprivacy：Tracking=false，CollectedDataTypes 为空，UserDefaults 理由填 CA92.1</td><td>见 B1；内容必须和上面的隐私标签一致</td></tr>
+<tr><td>App 跟踪透明度 (ATT)</td><td>不需要</td><td>没有用 IDFA，也没有跨 App 追踪，不要加 NSUserTrackingUsageDescription</td></tr>
+<tr><td>出口合规（加密）</td><td>选「<b>以上提及的算法均不使用</b>」/ Info.plist 设置 ITSAppUsesNonExemptEncryption = NO</td><td>只用了系统内置的 HTTPS（Game Center），属于豁免范围；不需要提交法国加密申报</td></tr>
+<tr><td>内容版权</td><td>否（不含第三方内容）</td><td>音效是程序合成的，图标和美术都是自绘，没有第三方素材和字体授权问题</td></tr>
+<tr><td>辅助功能营养标签（可选）</td><td>首发可以跳过；准备申报的话，只勾已实测通过的项（例如「深色界面」）</td><td>这是 2025 年新增的可选项，乱勾会有合规风险</td></tr>
+<tr><td>版权 Copyright（版本页）</td><td><code>2026 【开发者账号法定名称】</code></td><td>必须和开发者账号的法定主体一致（个人账号填本人姓名，公司账号填公司名）</td></tr>
+</table></section>
+
+<section id="s9"><div class="kicker">Pricing</div><h2>定价与供应地区</h2>
+<table><tr><th style="width:190px">项目</th><th>填写</th><th>说明</th></tr>
+<tr><td>价格</td><td>免费（USD 0）</td><td>没有 App 内购买项目</td></tr>
+<tr><td>供应地区</td><td>全部地区，<b>取消勾选：中国大陆、越南</b></td><td>版号和许可拿到后再单独加回来</td></tr>
+<tr><td>Apple 芯片 Mac</td><td><b>取消勾选</b></td><td>滑动操作在鼠标和触控板上体验差，避免 Mac 用户的差评</td></tr>
+<tr><td>Apple Vision Pro</td><td><b>取消勾选</b></td><td>同上，滑动操作在 Vision Pro 上同样不适配</td></tr>
+<tr><td>预订</td><td>不开启</td><td>首发直接上架</td></tr>
+<tr><td>税务类别</td><td>默认（App 软件）</td><td></td></tr>
+</table></section>
+
+<section id="s10"><div class="kicker">Game Center</div><h2>Game Center 排行榜（App › 功能 › Game Center）</h2>
+<table><tr><th>参考名称</th><th>排行榜 ID</th><th>类型</th><th>格式 / 排序 / 范围</th><th>本地化名称（简 / 繁 / 英）</th></tr>
+<tr><td>All-Time Best</td><td><code>snakefeast.best.alltime</code></td><td>经典</td><td>整数 · 从高到低 · 0–999</td><td>全球最高分 / 全球最高分 / All-Time Best</td></tr>
+<tr><td>Weekly Best</td><td><code>snakefeast.best.weekly</code></td><td>循环（每周，周一 00:00 开始）</td><td>整数 · 从高到低 · 0–999</td><td>本周最高分 / 本週最高分 / Weekly Best</td></tr></table>
+<div class="callout r">排行榜上线后<b>不能删除，ID 也不能复用</b>。ID 必须和代码里的完全一致（区分大小写）。分数后缀：中文「分」，英文「points」。建好后在<b>版本页 › Game Center 勾选并添加这两个排行榜</b>。</div></section>
+
+<section id="s11"><div class="kicker">Version Page</div><h2>版本页与 App 审核信息</h2>
+<table><tr><th style="width:190px">字段</th><th>填写</th></tr>
+<tr><td>构建版本</td><td>从 Xcode Organizer 上传的 Release 构建（选「Any iOS Device」进行 Archive）</td><td></td></tr>
+<tr><td>登录信息</td><td><b>不需要登录</b>（取消勾选「需要登录」）</td><td></td></tr>
+<tr><td>联系人</td><td>名、姓、电话（+86…）、邮箱：填真实可联系的信息，审核员可能会打电话</td><td></td></tr>
+<tr><td>附件</td><td>不需要</td><td></td></tr>
+<tr><td>发布方式</td><td><b>手动发布此版本</b>（审核通过后由你选择上线时间）</td><td></td></tr>
+<tr><td>此版本的新增内容</td><td>首个版本不需要填</td><td></td></tr>
+</table>
+<div class="field"><div class="fh"><span class="fl">审核备注 Notes（英文，直接粘贴）</span><span class="cnt" data-for="f21" data-max="4000"></span><button class="cp" data-for="f21">复制</button></div><pre id="f21" class="fv">Snake Feast is a single-player arcade game. No account or login is required; all features are available immediately after launch.
+
+How to play: tap "Start Game", then swipe on the board to change direction and tap the board to dash. Eat golden seeds to score; the run ends when the player touches the snake.
+
+Game Center is optional. If the device is signed in to Game Center, scores are submitted to two leaderboards (snakefeast.best.alltime, snakefeast.best.weekly), viewable via the "Leaderboard" button on the home screen or in the pause menu. If not signed in, the game is fully playable offline with a local best score.
+
+The app contains no ads, no in-app purchases and no third-party SDKs, and it does not collect any user data.</pre></div></section>
+
+<section id="s12"><div class="kicker">Checklist</div><h2>提交流程清单（按顺序）</h2>
+<ol class="chk">
+<li><label><input type="checkbox">批准并完成 B1、B2 的工程改动（隐私清单 + 加密键），用 Release 构建验证</label></li>
+<li><label><input type="checkbox">替换 web/ 里的开发者名称和邮箱，部署 privacy.html / support.html / icon.png，浏览器能打开</label></li>
+<li><label><input type="checkbox">ASC 新建 App（第 1 节）→ 填 App 信息（第 2 节）→ 名称和副标题 × 3 种语言</label></li>
+<li><label><input type="checkbox">年龄分级问卷（第 7 节）、App 隐私（第 8 节）、定价与供应（第 9 节），记得排除国区、越南、Mac、Vision Pro</label></li>
+<li><label><input type="checkbox">创建两个 Game Center 排行榜并填好三语言本地化（第 10 节）</label></li>
+<li><label><input type="checkbox">Xcode：Product › Archive → Validate → Distribute（App Store Connect）上传，等待处理完成（约 15–30 分钟）</label></li>
+<li><label><input type="checkbox">TestFlight 内测：真机登录沙盒 Game Center，验证提交成绩、拉取排行榜、离线补交</label></li>
+<li><label><input type="checkbox">版本页：3 种语言 × 截图（iPhone + iPad）、推广文本、描述、关键词、网址；Copyright</label></li>
+<li><label><input type="checkbox">选择构建版本、勾选 Game Center 并关联两个排行榜、填写审核信息、选择手动发布</label></li>
+<li><label><input type="checkbox">添加以供审核 → 提交（通常 24–48 小时出结果）→ 通过后手动发布</label></li>
+</ol></section>
+
+<section id="s13"><div class="kicker">After Launch</div><h2>上线后 ASO 迭代计划</h2>
+<table><tr><th style="width:150px">节奏</th><th>动作</th><th>衡量指标</th></tr>
+<tr><td>第 1–2 周</td><td>每天看 ASC 分析：展示次数 → 产品页浏览 → 下载；记录主关键词排名</td><td>搜索展示次数、转化率</td></tr>
+<tr><td>第 2 周起</td><td>「产品页优化」A/B：第 1 张截图（深色进行中 vs 结算新纪录）；图标保持不动</td><td>转化率提升 ≥ 置信度 90%</td></tr>
+<tr><td>v1.0.1</td><td>接入 <code>SKStoreReviewController</code>：在「打破个人纪录」时请求评分（每年最多弹 3 次）</td><td>评分数量、平均分 ≥ 4.5</td></tr>
+<tr><td>每月</td><td>推广文本随热点更新（无需审核）；关键词替换排名 50 名以外的词</td><td>关键词覆盖数</td></tr>
+<tr><td>拿到版号后</td><td>开放中国大陆：上传批文和营业执照，填 ICP 备案号，简中元数据和备案保持一致</td><td>国区上架</td></tr>
+</table></section>
+</main>
+<script>
+document.querySelectorAll('.cnt').forEach(c=>{const el=document.getElementById(c.dataset.for);const n=[...el.textContent].length;const m=+c.dataset.max;c.textContent=m?n+' / '+m:n+' 字符';if(m&&n>m)c.classList.add('over')});
+document.querySelectorAll('.cp').forEach(b=>b.onclick=async()=>{const t=document.getElementById(b.dataset.for).textContent;try{await navigator.clipboard.writeText(t)}catch(e){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove()}b.textContent='已复制';b.classList.add('done');setTimeout(()=>{b.textContent='复制';b.classList.remove('done')},1400)});
+document.querySelectorAll('.tb').forEach(t=>t.onclick=()=>{const l=t.dataset.loc;document.querySelectorAll('.tb').forEach(x=>x.classList.toggle('on',x.dataset.loc===l));document.querySelectorAll('.lp').forEach(p=>p.classList.toggle('on',p.dataset.loc===l))});
+</script></body></html>
