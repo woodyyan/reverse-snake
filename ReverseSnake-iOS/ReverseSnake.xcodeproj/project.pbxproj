@@ -22,6 +22,7 @@
 		B1C2D3E40000000000000002 /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E40000000000000008 /* Localization.swift */; };
 		C1D2E3F40000000000000001 /* GameCenterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1D2E3F40000000000000011 /* GameCenterManager.swift */; };
 		C1D2E3F40000000000000002 /* LeaderboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1D2E3F40000000000000012 /* LeaderboardView.swift */; };
+		D1E2F3A40000000000000001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D1E2F3A40000000000000002 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -45,6 +46,7 @@
 		C1D2E3F40000000000000011 /* GameCenterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCenterManager.swift; sourceTree = "<group>"; };
 		C1D2E3F40000000000000012 /* LeaderboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardView.swift; sourceTree = "<group>"; };
 		C1D2E3F40000000000000013 /* ReverseSnake.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ReverseSnake.entitlements; sourceTree = "<group>"; };
+		D1E2F3A40000000000000002 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,6 +95,7 @@
 				C1D2E3F40000000000000011 /* GameCenterManager.swift */,
 				C1D2E3F40000000000000012 /* LeaderboardView.swift */,
 				C1D2E3F40000000000000013 /* ReverseSnake.entitlements */,
+				D1E2F3A40000000000000002 /* PrivacyInfo.xcprivacy */,
 			);
 			path = ReverseSnake;
 			sourceTree = "<group>";
@@ -160,6 +163,7 @@
 			files = (
 				A1B2C3D40000000000000029 /* Assets.xcassets in Resources */,
 				B1C2D3E40000000000000001 /* Localizable.strings in Resources */,
+				D1E2F3A40000000000000001 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

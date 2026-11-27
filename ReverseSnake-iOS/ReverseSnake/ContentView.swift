@@ -12,6 +12,13 @@ struct ShakeEffect: GeometryEffect {
     }
 }
 
+/// Target grid for the current stage size.
+struct GridSpec: Equatable {
+    let cols: Int
+    let rows: Int
+    let mode: GridMode
+}
+
 /// Board stage: grid shape follows the available area so the board fills
 /// nearly the whole screen on any iPhone / iPad size and orientation.
 struct BoardStage: View {
@@ -20,15 +27,18 @@ struct BoardStage: View {
 
     var body: some View {
         GeometryReader { inner in
+            // Target grid for this stage size; the engine may keep the live
+            // round on its current grid (see GameEngine.applyGrid).
             let dims = m.gridDimensions(available: inner.size)
+            let cols = engine.cols, rows = engine.rows
             let pad = m.stagePad
             let availW = max(0, inner.size.width - 2 * pad)
             let availH = max(120, inner.size.height - 2 * pad)
-            let cell = max(9, floor(min(availW / CGFloat(dims.cols),
-                                        availH / CGFloat(dims.rows))))
-            let w = cell * CGFloat(dims.cols)
-            let h = cell * CGFloat(dims.rows)
-            let gridKey = "\(dims.cols)x\(dims.rows)-\(m.gridMode.rawValue)"
+            let cell = max(9, floor(min(availW / CGFloat(cols),
+                                        availH / CGFloat(rows))))
+            let w = cell * CGFloat(cols)
+            let h = cell * CGFloat(rows)
+            let spec = GridSpec(cols: dims.cols, rows: dims.rows, mode: m.gridMode)
 
             ZStack {
                 RoundedRectangle(cornerRadius: m.stageRadius, style: .continuous)
@@ -36,17 +46,19 @@ struct BoardStage: View {
                     .overlay(RoundedRectangle(cornerRadius: m.stageRadius, style: .continuous)
                         .stroke(Theme.hairline, lineWidth: 1))
 
-                GameBoardView(engine: engine, cols: dims.cols, rows: dims.rows, cell: cell)
+                GameBoardView(engine: engine, cols: cols, rows: rows, cell: cell)
                     .frame(width: w, height: h)
                     .clipShape(RoundedRectangle(cornerRadius: max(6, m.stageRadius - pad), style: .continuous))
             }
             .frame(width: inner.size.width, height: h + 2 * pad)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             .onAppear {
-                engine.applyGrid(cols: dims.cols, rows: dims.rows, mode: m.gridMode)
+                engine.applyGrid(cols: spec.cols, rows: spec.rows, mode: spec.mode)
             }
-            .onChange(of: gridKey) { _ in
-                engine.applyGrid(cols: dims.cols, rows: dims.rows, mode: m.gridMode)
+            // Use the delivered value, not captured locals: during rotation /
+            // fold transitions the closure can hold an earlier layout pass.
+            .onChange(of: spec) { s in
+                engine.applyGrid(cols: s.cols, rows: s.rows, mode: s.mode)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -83,7 +95,10 @@ struct ContentView: View {
                             }
                         }
                 }
-                .padding(.top, m.outerPadTop)
+                // Screens without a top inset (iPhone Duo cover display keeps
+                // its status bar in a side column) get a little breathing room.
+                .padding(.top, m.outerPadTop
+                         + (geo.safeAreaInsets.top < 1 && !m.isShortLandscape ? 10 : 0))
                 .padding(.bottom, m.outerPadBottom)
                 .padding(.horizontal, m.outerPadH)
                 .frame(maxWidth: 1100)

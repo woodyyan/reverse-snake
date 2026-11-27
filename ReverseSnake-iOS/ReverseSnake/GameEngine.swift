@@ -110,6 +110,10 @@ final class GameEngine: ObservableObject {
     private(set) var cols = 26
     private(set) var rows = 18
     private(set) var gridMode: GridMode = .wide
+    /// Stage shape measured while a round is in progress (iPhone Duo fold /
+    /// unfold, rotation, Split View resize). The live run keeps its grid and
+    /// this one takes effect at the next reset().
+    private var pendingGrid: (cols: Int, rows: Int, mode: GridMode)?
 
     var snake: [GridPoint] = []
     var player = GridPoint(x: 4, y: 12)
@@ -177,6 +181,13 @@ final class GameEngine: ObservableObject {
 
     // ---------- setup ----------
     func reset() {
+        if let g = pendingGrid {
+            cols = g.cols
+            rows = g.rows
+            gridMode = g.mode
+            pendingGrid = nil
+            objectWillChange.send()
+        }
         snake = []
         // Layout is proportionally identical to the web version's 18x26 / 26x18
         // start positions: snake head at (cols-4, 3|4), player at (4, rows-6).
@@ -503,19 +514,27 @@ final class GameEngine: ObservableObject {
     }
 
     /// The board grid is derived from the actual stage size so it fills the
-    /// screen. Any shape change (rotation, Split View resize) restarts the
-    /// round, matching the web relayout() behaviour.
+    /// screen. On the home screen the new shape applies immediately. During a
+    /// round (countdown / running / paused / over) the run is never thrown
+    /// away: BoardStage re-fits the cell size to the current grid, the game
+    /// auto-pauses so the player can re-grip after folding / unfolding an
+    /// iPhone Duo or rotating, and the new grid is used from the next round.
     func applyGrid(cols newCols: Int, rows newRows: Int, mode: GridMode) {
-        let unchanged = cols == newCols && rows == newRows && gridMode == mode
+        if cols == newCols && rows == newRows && gridMode == mode {
+            pendingGrid = nil
+            return
+        }
+        if phase != .ready {
+            pendingGrid = (newCols, newRows, mode)
+            pause()
+            return
+        }
+        pendingGrid = nil
         cols = newCols
         rows = newRows
         gridMode = mode
-        guard !unchanged else { return }
-        if phase == .ready {
-            reset()
-        } else {
-            start()
-        }
+        objectWillChange.send()
+        reset()
     }
 
     // ---------- loop (driven by CADisplayLink) ----------

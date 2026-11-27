@@ -8,6 +8,8 @@
 - 最低系统：iOS 16.0
 - 多语言：简体中文 / 繁体中文 / 英文（美国），跟随系统自动切换
 - 方向：iPhone 竖屏 / 横屏，iPad 四方向；支持旋转、分屏（Split View）与安全区
+- iPhone Duo：外屏 1398×2034 与内屏 2007×2853 均已在 iOS 27.2 模拟器实测；外屏无顶部安全区（状态栏在侧栏）时顶部自动加 10pt 留白；折叠 / 展开对局不丢失（自动暂停）
+- 隐私清单：`ReverseSnake/PrivacyInfo.xcprivacy`（不追踪、不收集数据；UserDefaults 理由 CA92.1），Info.plist 声明 `ITSAppUsesNonExemptEncryption = NO`
 - Bundle ID：`com.woodystudio.reversesnake`，版本号 1.6（与网页版一致）
 - 外观：浅色「晨纸 Daylight」/ 深色「夜行 Nocturne」双主题，默认跟随系统，可在主页或暂停面板切换
 
@@ -85,12 +87,13 @@ ReverseSnake-iOS/
     ├── ContentView.swift            # 分层布局（游戏 / 结算 / 暂停 / 主页 / 排行榜）、动态网格、抖动、Game Center 事件桥接
     ├── GameCenterManager.swift      # Game Center 登录 / 提交 / 拉榜 / 离线补交 / 系统榜跳转（+ DEBUG mock）
     ├── LeaderboardView.swift        # 排行榜页（领奖台 / 列表 / 我的名次）、结算页名次条
-    └── ReverseSnake.entitlements    # com.apple.developer.game-center
+    ├── ReverseSnake.entitlements    # com.apple.developer.game-center
+    └── PrivacyInfo.xcprivacy        # 隐私清单（App Store 必需）
 ```
 
 调参入口：`GameEngine.swift` 顶部常量（`playerMS / snakeBase / snakeMin / planSteps / grow / dashCD / dirs`），与网页版 `config` 区一一对应。
 
-**动态网格**：`LayoutMetrics.gridDimensions(available:)` 按舞台实际宽高比计算列/行，总格数维持约 468（与网页版 18×26 / 26×18 同为 468），因此棋盘几乎铺满整屏而难度不变。iPhone 竖屏实测 16×29、iPad 竖屏 19×25。旋转或分屏导致网格形状变化时按网页版 `relayout()` 行为重开一局。
+**动态网格**：`LayoutMetrics.gridDimensions(available:)` 按舞台实际宽高比计算列/行，总格数维持约 468（与网页版 18×26 / 26×18 同为 468），因此棋盘几乎铺满整屏而难度不变。iPhone 竖屏实测 16×29、iPad 竖屏 19×25。主页上网格随舞台尺寸即时更新；**对局中**（倒计时 / 进行中 / 暂停 / 结算）舞台尺寸变化（iPhone Duo 折叠 / 展开、旋转、分屏）**不再重开**：保留当前网格、按新舞台重算格子大小居中显示，并自动暂停，新网格从下一局生效（`GameEngine.applyGrid` + `pendingGrid`）。`BoardStage` 用 `onChange(of: GridSpec)` 的新值驱动，避免旋转 / 折叠过渡中闭包捕获到旧布局。
 
 **等宽对齐**：顶部 Header / HUD 与深空舞台外框共用同一宽度，三者左右边界严格对齐。舞台外框填满可用宽度，棋盘格子保持正方形并居中——只是把原来的浅色侧边空隙变成深空底色，因此棋盘实际尺寸与位置不变，信息区也不被压缩。
 
@@ -244,3 +247,8 @@ xcrun simctl launch booted com.woodystudio.reversesnake -GCMock signedout -GCSho
 - `Assets.xcassets` 已加入 Resources Build Phase，`ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon`；LaunchScreen 由 `UILaunchScreen_Generation` 自动生成。
 - `GENERATE_INFOPLIST_FILE = YES` 时 `CFBundleName` 由 `PRODUCT_NAME` 固定生成（`ReverseSnake`），`INFOPLIST_KEY_CFBundleName` build setting 不生效；用户可见名称由 `CFBundleDisplayName` 决定，改游戏名只需改这一项 + 顶栏文案。
 - 真机部署需在 Target → Signing & Capabilities 里选择自己的 Development Team（工程已开启 Automatic 签名）。
+## App Store 上架资料
+
+- `AppStore/ASC-提交资料.html`：三语言元数据、合规答案、提交清单
+- `AppStore/screenshots/<语言>/`：`iphone-6.3`（1206×2622，必传）、`iphone-duo-inner`（2007×2853）、`iphone-duo-outer`（1398×2034）、`ipad-13`（2064×2752）、`iphone-6.9`（可选）
+- 隐私政策 / 技术支持页在仓库根目录 `privacy.html` / `support.html`（GitHub Pages）
